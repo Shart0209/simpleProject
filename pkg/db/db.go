@@ -1,7 +1,6 @@
-package main
+package db
 
 import (
-	"fmt"
 	"simpleProject/pkg/model"
 )
 
@@ -30,9 +29,4 @@ var Data = map[int]model.DocumentManagment{
 		Metod:       "аукцион",
 		Sum:         "150 000",
 	},
-}
-
-func main() {
-
-	fmt.Println(Data)
 }
