@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-func (s *service) Hello(name string) (string, error) {
+func (s *service) Doc(name string) (string, error) {
 	if strings.TrimSpace(name) == "" {
 		return "", errors.New("bad name")
 	}
-	return fmt.Sprintf("Hello world %s", name), nil
+	return fmt.Sprintf("Name %s", name), nil
 }
 
 //TODO create CRUD method

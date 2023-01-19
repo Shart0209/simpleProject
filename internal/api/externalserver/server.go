@@ -3,7 +3,6 @@ package externalserver
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,7 @@ import (
 )
 
 type Service interface {
-	Hello(name string) (string, error)
+	Doc(name string) (string, error)
 }
 
 type Server interface {
@@ -22,7 +21,6 @@ type Server interface {
 
 type transport interface {
 	handler(ctx *gin.Context)
-	name() string
 }
 
 type server struct {
@@ -75,24 +73,20 @@ func (s *server) configureRouter() {
 	})
 
 	// init transports
-	// hello := &helloTransport{
-	// 	svc: s.svc,
-	// 	log: s.logger.With().Str("transport", "hello").Logger(),
-	// }
+	docManagment := &docManagmentTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "docManagment").Logger(),
+	}
 
-	// apiV1 := s.router.Group("/api/v1")
-	// apiV1.GET("/hello", s.someMiddleware(hello))
+	//GET /test?name=red response: Name red
+	s.router.GET("/test", s.middleware(docManagment))
 
+	apiV1 := s.router.Group("/api/v1")
+	apiV1.GET("/doc", s.middleware(docManagment))
 }
 
-func (s *server) someMiddleware(tr transport) func(*gin.Context) {
+func (s *server) middleware(tr transport) func(*gin.Context) {
 	return func(ctx *gin.Context) {
-		t := time.Now()
-
-		defer func() {
-			s.logger.Info().Str("Api call time lead:", time.Since(t).String()).Msg(ctx.Request.RequestURI)
-		}()
-
 		tr.handler(ctx)
 	}
 }
