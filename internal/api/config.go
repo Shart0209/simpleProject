@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	LogLever string `envconfig:"LOG_LEVEL" default:"debug"`
+	LogLevel string `envconfig:"LOG_LEVEL" default:"debug"`
 	Listen   string `envconfig:"LISTEN" default:":8080"`
 }
 
