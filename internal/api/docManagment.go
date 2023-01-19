@@ -13,8 +13,12 @@ func (s *service) Doc(name string) (string, error) {
 	return fmt.Sprintf("Name %s", name), nil
 }
 
-//TODO create CRUD method
-//create
-//read
-//delete
-//update
+func (s *service) ListDocs() {}
+
+func (s *service) AddDocs() {}
+
+func (s *service) DeleteDocs() {}
+
+func (s *service) GetDocs(id int) {}
+
+func (s *service) UpdateDocs(id int) {}
