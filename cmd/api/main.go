@@ -29,7 +29,7 @@ func main() {
 
 	if err := g.Wait(); err != nil {
 		if !errors.Is(err, sig.ErrShutdownSignalReceived) {
-			log.Error().Err(err).Msg("errgoup error")
+			log.Error().Err(err).Msg("errgroup error")
 		}
 
 		log.Info().Msg("service stopping")

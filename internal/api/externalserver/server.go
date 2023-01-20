@@ -3,6 +3,7 @@ package externalserver
 import (
 	"context"
 	"net/http"
+	"simpleProject/pkg/model"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,11 @@ import (
 )
 
 type Service interface {
-	Doc(name string) (string, error)
+	GetAll() (map[int]model.DocumentManagement, error)
+	Add() (string, error)
+	DeleteID(id int) (string, error)
+	GetID(id int) (string, error)
+	UpdateID(id int) (string, error)
 }
 
 type Server interface {
@@ -66,6 +71,7 @@ func (s *server) configureRouter() {
 		AllowOrigins: []string{"*"},
 	}))
 
+	//test
 	s.router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
@@ -73,16 +79,29 @@ func (s *server) configureRouter() {
 	})
 
 	// init transports
-	docManagment := &docManagmentTransport{
+	docManagement := &docManagementTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "docManagment").Logger(),
+		log: s.logger.With().Str("transport", "docManagement").Logger(),
 	}
 
-	//GET /test?name=red response: Name red
-	s.router.GET("/test", s.middleware(docManagment))
+	docAdd := &docAddTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "docManagement").Logger(),
+	}
 
-	apiV1 := s.router.Group("/api/v1")
-	apiV1.GET("/doc", s.middleware(docManagment))
+	//#######################################
+	//	добавить handlers на каждый метод
+	//  создать файлики под каждый handler
+	//  добавить свой транспорт для каждой ручки
+	//#######################################
+
+	doc := s.router.Group("/documents")
+	doc.GET("/list", s.middleware())
+	doc.GET("/id/:id", s.middleware())
+	doc.POST("/add", s.middleware())
+	doc.DELETE("/delete/:id", s.middleware())
+	doc.PATCH("/update/:id", s.middleware())
+
 }
 
 func (s *server) middleware(tr transport) func(*gin.Context) {

@@ -1,6 +1,6 @@
 package model
 
-type DocumentManagment struct {
+type DocumentManagement struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Date        string `json:"date"`        //дата заключения ГК
@@ -9,6 +9,6 @@ type DocumentManagment struct {
 	DateIn      string `json:"date_in"`     //срок действия ГК - начало
 	DateOut     string `json:"date_out"`    //срок действия ГК - конец
 	Distributor string `json:"distributor"` //поставщик услуг
-	Metod       string `json:"metod"`       //метод проведения закупки
+	Method      string `json:"method"`      //метод проведения закупки
 	Sum         string `json:"sum"`         //сумма ГК
 }

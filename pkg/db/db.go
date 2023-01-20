@@ -4,7 +4,7 @@ import (
 	"simpleProject/pkg/model"
 )
 
-var Data = map[int]model.DocumentManagment{
+var DataBaseTest = map[int]model.DocumentManagement{
 	1: {
 		Id:          "1",
 		Name:        "Оказание услуг по передаче данных по широкополосному каналу Интернет",
@@ -14,7 +14,7 @@ var Data = map[int]model.DocumentManagment{
 		DateIn:      "01.01.2023",
 		DateOut:     "31.12.2023",
 		Distributor: "пао ростелеком",
-		Metod:       "аукцион",
+		Method:      "аукцион",
 		Sum:         "150 000",
 	},
 	2: {
@@ -26,7 +26,7 @@ var Data = map[int]model.DocumentManagment{
 		DateIn:      "01.01.2023",
 		DateOut:     "31.12.2023",
 		Distributor: "пао ростелеком",
-		Metod:       "аукцион",
+		Method:      "аукцион",
 		Sum:         "150 000",
 	},
 }
