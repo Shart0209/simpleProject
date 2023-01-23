@@ -2,6 +2,17 @@
 POST http://127.0.0.1:8080/documents/add
 Content-Type: application/json
 
-### Send POST request with json body
-POST http://127.0.0.1:8080/documents/1
-Content-Type: application/json
+{
+  "id": 3,
+  "name": "NEW GK",
+  "date": "2023-01-28T15:04:05Z07:00",
+  "description": "new descriptions",
+  "file": "",
+  "date_in": "2023-01-28T15:04:05Z07:00",
+  "date_out": "2023-01-28T15:04:05Z07:00",
+  "distributor": "mts",
+  "method": "аукцион",
+  "sum": "1000.90"
+}
+
+

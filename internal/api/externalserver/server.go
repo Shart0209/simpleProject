@@ -12,9 +12,11 @@ import (
 
 type Service interface {
 	GetAll() (map[int]model.DocumentManagement, error)
-	Add() (string, error)
+	GetID(id int) (model.DocumentManagement, error)
+
+	Add([]byte) (model.DocumentManagement, error)
+
 	DeleteID(id int) (string, error)
-	GetID(id int) (string, error)
 	UpdateID(id int) (string, error)
 }
 
@@ -25,7 +27,9 @@ type Server interface {
 }
 
 type transport interface {
-	handler(ctx *gin.Context)
+	getAllHandler(ctx *gin.Context)
+	getIDHandler(ctx *gin.Context)
+	addHandler(ctx *gin.Context)
 }
 
 type server struct {
@@ -79,33 +83,34 @@ func (s *server) configureRouter() {
 	})
 
 	// init transports
-	docManagement := &docManagementTransport{
+	docm := &docManagementTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "docManagement").Logger(),
+		log: s.logger.With().Str("transport", "Doc").Logger(),
 	}
-
-	docAdd := &docAddTransport{
-		svc: s.svc,
-		log: s.logger.With().Str("transport", "docManagement").Logger(),
-	}
-
-	//#######################################
-	//	добавить handlers на каждый метод
-	//  создать файлики под каждый handler
-	//  добавить свой транспорт для каждой ручки
-	//#######################################
 
 	doc := s.router.Group("/documents")
-	doc.GET("/list", s.middleware())
-	doc.GET("/id/:id", s.middleware())
-	doc.POST("/add", s.middleware())
-	doc.DELETE("/delete/:id", s.middleware())
-	doc.PATCH("/update/:id", s.middleware())
+	doc.GET("/list", s.oneMiddleware(docm))
+	doc.GET("/id/:id", s.twoMiddleware(docm))
+	doc.POST("/add", s.threeMiddleware(docm))
+	//doc.DELETE("/delete/:id", s.middleware())
+	//doc.PATCH("/update/:id", s.middleware())
 
 }
 
-func (s *server) middleware(tr transport) func(*gin.Context) {
+func (s *server) oneMiddleware(tr transport) func(*gin.Context) {
 	return func(ctx *gin.Context) {
-		tr.handler(ctx)
+		tr.getAllHandler(ctx)
+	}
+}
+
+func (s *server) twoMiddleware(tr transport) func(*gin.Context) {
+	return func(ctx *gin.Context) {
+		tr.getIDHandler(ctx)
+	}
+}
+
+func (s *server) threeMiddleware(tr transport) func(*gin.Context) {
+	return func(ctx *gin.Context) {
+		tr.addHandler(ctx)
 	}
 }
