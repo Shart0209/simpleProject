@@ -15,12 +15,12 @@ type docManagementTransport struct {
 
 func (t *docManagementTransport) addHandler(ctx *gin.Context) {
 
-	//_ = ctx.BindJSON(&json)
 	resBody, _ := io.ReadAll(ctx.Request.Body)
 
 	data, err := t.svc.Add(resBody)
 	if err != nil {
-		t.log.Error().Err(err).Msg("bad JSON")
+		t.log.Error().Err(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 	}
 	ctx.JSON(http.StatusOK, data)
 }

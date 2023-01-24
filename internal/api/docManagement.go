@@ -2,10 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"simpleProject/pkg/db"
 	"simpleProject/pkg/model"
+	"time"
 )
 
 func (s *service) GetAll() (map[int]model.DocumentManagement, error) {
@@ -27,12 +27,13 @@ func (s *service) Add(arr []byte) (model.DocumentManagement, error) {
 
 	err := json.Unmarshal(arr, &res)
 	if err != nil {
-		return model.DocumentManagement{}, errors.New("error unmarshal JSON")
+		s.logger.Error().Err(err).Msg("bad unmarshal JSON")
+		return model.DocumentManagement{}, err
 	}
+	//add to map DB
+	db.DataBaseTest[len(db.DataBaseTest)+1] = res
 
-	fmt.Println(res)
-
-	return model.DocumentManagement{}, nil
+	return res, nil
 }
 
 func (s *service) UpdateID(id int) (string, error) {
@@ -45,4 +46,11 @@ func (s *service) DeleteID(id int) (string, error) {
 
 func (s *service) DeleteALL(id int) (string, error) {
 	return "DeleteDocs", nil
+}
+
+func getTime(i interface{}) time.Time {
+	date := fmt.Sprintf("%v", i)
+	t, _ := time.Parse(time.RFC3339, date)
+
+	return t
 }
