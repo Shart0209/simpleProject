@@ -27,9 +27,10 @@ type Server interface {
 }
 
 type transport interface {
-	getAllHandler(ctx *gin.Context)
-	getIDHandler(ctx *gin.Context)
-	addHandler(ctx *gin.Context)
+	//getAllHandler(ctx *gin.Context)
+	//getIDHandler(ctx *gin.Context)
+	handler(ctx *gin.Context)
+	//handler
 }
 
 type server struct {
@@ -83,34 +84,36 @@ func (s *server) configureRouter() {
 	})
 
 	// init transports
-	docm := &docManagementTransport{
+	add := &addTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "Doc").Logger(),
+		log: s.logger.With().Str("transport", "create document").Logger(),
+	}
+	upd := &getTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "update document").Logger(),
+	}
+
+	get := &getTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "get all/id document").Logger(),
+	}
+
+	del := &getTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "delete all/id document").Logger(),
 	}
 
 	doc := s.router.Group("/documents")
-	doc.GET("/list", s.oneMiddleware(docm))
-	doc.GET("/id/:id", s.twoMiddleware(docm))
-	doc.POST("/add", s.threeMiddleware(docm))
-	//doc.DELETE("/delete/:id", s.middleware())
-	//doc.PATCH("/update/:id", s.middleware())
+	doc.GET("/list", s.middleware(get))
+	doc.GET("/id/:id", s.middleware(get))
+	doc.POST("/add", s.middleware(add))
+	doc.PATCH("/update/:id", s.middleware(upd))
+	doc.DELETE("/delete/:id", s.middleware(del))
 
 }
 
-func (s *server) oneMiddleware(tr transport) func(*gin.Context) {
+func (s *server) middleware(tr transport) func(*gin.Context) {
 	return func(ctx *gin.Context) {
-		tr.getAllHandler(ctx)
-	}
-}
-
-func (s *server) twoMiddleware(tr transport) func(*gin.Context) {
-	return func(ctx *gin.Context) {
-		tr.getIDHandler(ctx)
-	}
-}
-
-func (s *server) threeMiddleware(tr transport) func(*gin.Context) {
-	return func(ctx *gin.Context) {
-		tr.addHandler(ctx)
+		tr.handler(ctx)
 	}
 }
