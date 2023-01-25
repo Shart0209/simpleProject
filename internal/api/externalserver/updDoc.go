@@ -5,14 +5,15 @@ import (
 	"github.com/rs/zerolog"
 	"io"
 	"net/http"
+	"strconv"
 )
 
-type addTransport struct {
+type updTransport struct {
 	svc Service
 	log zerolog.Logger
 }
 
-func (t *addTransport) handler(ctx *gin.Context) {
+func (t *updTransport) handler(ctx *gin.Context) {
 	resBody, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {
 		t.log.Error().Err(err).Msg("bad read context body")
@@ -20,11 +21,20 @@ func (t *addTransport) handler(ctx *gin.Context) {
 		return
 	}
 
-	// add document /documents/add
-	data, err := t.svc.Add(&resBody)
+	id := ctx.Param("id")
+	idx, err := strconv.Atoi(id)
+	if err != nil {
+		t.log.Error().Err(err).Msg("bad index")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request error"})
+		return
+	}
+
+	// update document /documents/update
+	data, err := t.svc.UpdateID(idx, &resBody)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusCreated, Response{Data: data})
+	ctx.JSON(http.StatusOK, Response{Data: data})
+
 }

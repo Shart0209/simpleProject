@@ -12,12 +12,11 @@ import (
 
 type Service interface {
 	GetAll() (map[int]model.DocumentManagement, error)
-	GetID(id int) (model.DocumentManagement, error)
-
-	Add([]byte) (model.DocumentManagement, error)
-
-	DeleteID(id int) (string, error)
-	UpdateID(id int) (string, error)
+	GetID(int) (model.DocumentManagement, error)
+	Add(*[]byte) (model.DocumentManagement, error)
+	UpdateID(int, *[]byte) (model.DocumentManagement, error)
+	DeleteID(int) error
+	DeleteALL()
 }
 
 type Server interface {
@@ -27,10 +26,7 @@ type Server interface {
 }
 
 type transport interface {
-	//getAllHandler(ctx *gin.Context)
-	//getIDHandler(ctx *gin.Context)
 	handler(ctx *gin.Context)
-	//handler
 }
 
 type server struct {
@@ -88,7 +84,7 @@ func (s *server) configureRouter() {
 		svc: s.svc,
 		log: s.logger.With().Str("transport", "create document").Logger(),
 	}
-	upd := &getTransport{
+	upd := &updTransport{
 		svc: s.svc,
 		log: s.logger.With().Str("transport", "update document").Logger(),
 	}
@@ -98,7 +94,7 @@ func (s *server) configureRouter() {
 		log: s.logger.With().Str("transport", "get all/id document").Logger(),
 	}
 
-	del := &getTransport{
+	del := &delTransport{
 		svc: s.svc,
 		log: s.logger.With().Str("transport", "delete all/id document").Logger(),
 	}
@@ -108,6 +104,7 @@ func (s *server) configureRouter() {
 	doc.GET("/id/:id", s.middleware(get))
 	doc.POST("/add", s.middleware(add))
 	doc.PATCH("/update/:id", s.middleware(upd))
+	doc.DELETE("/delete", s.middleware(del))
 	doc.DELETE("/delete/:id", s.middleware(del))
 
 }

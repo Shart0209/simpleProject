@@ -19,24 +19,25 @@ func (t *getTransport) handler(ctx *gin.Context) {
 		idx, err := strconv.Atoi(id)
 		if err != nil {
 			t.log.Error().Err(err).Msg("bad index")
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": "bad request error",
-			})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request error"})
 			return
 		}
 
 		data, err := t.svc.GetID(idx)
 		if err != nil {
-			t.log.Fatal().Err(err).Msg("error get all json")
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+			return
 		}
-		ctx.JSON(http.StatusOK, data)
+		ctx.JSON(http.StatusOK, Response{Data: data})
 		return
 	}
 
 	// get all documents /documents/list
 	data, err := t.svc.GetAll()
 	if err != nil {
-		t.log.Fatal().Err(err).Msg("error get all json")
+		t.log.Fatal().Err(err).Msg("error get all documents")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "error not found"})
+		return
 	}
-	ctx.JSON(http.StatusOK, data)
+	ctx.JSON(http.StatusOK, Response{Data: data})
 }
