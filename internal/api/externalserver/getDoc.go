@@ -14,7 +14,7 @@ type getTransport struct {
 
 func (t *getTransport) handler(ctx *gin.Context) {
 
-	// get by id document /documents/id/:id
+	// get by id document /documents/:id
 	if id := ctx.Param("id"); id != "" {
 		idx, err := strconv.Atoi(id)
 		if err != nil {
@@ -32,7 +32,7 @@ func (t *getTransport) handler(ctx *gin.Context) {
 		return
 	}
 
-	// get all documents /documents/list
+	// get all documents /documents
 	data, err := t.svc.GetAll()
 	if err != nil {
 		t.log.Fatal().Err(err).Msg("error get all documents")

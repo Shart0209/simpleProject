@@ -1,11 +1,22 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"simpleProject/pkg/db"
 	"simpleProject/pkg/model"
 )
+
+func (s *service) getJSON(arr *[]byte) (*model.DocumentManagement, error) {
+	var res model.DocumentManagement
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+	if err := json.Unmarshal(*arr, &res); err != nil {
+		s.logger.Error().Err(err).Msg("error decoding json response")
+		return &model.DocumentManagement{}, err
+	}
+	return &res, nil
+}
 
 func (s *service) GetAll() (map[int]model.DocumentManagement, error) {
 	return db.DataBaseTest, nil
@@ -21,31 +32,28 @@ func (s *service) GetID(id int) (model.DocumentManagement, error) {
 }
 
 func (s *service) Add(arr *[]byte) (model.DocumentManagement, error) {
-	var res model.DocumentManagement
 
-	err := json.Unmarshal(*arr, &res)
+	res, err := s.getJSON(arr)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("error unmarshal JSON from ctx body for add")
 		return model.DocumentManagement{}, err
 	}
-	//add to map DB
-	db.DataBaseTest[len(db.DataBaseTest)+1] = res
 
-	return res, nil
+	//add to map DB
+	db.DataBaseTest[len(db.DataBaseTest)+1] = *res
+
+	return *res, nil
 }
 
 func (s *service) UpdateID(id int, arr *[]byte) (model.DocumentManagement, error) {
-	var res model.DocumentManagement
 
 	if _, ok := db.DataBaseTest[id]; ok {
-		err := json.Unmarshal(*arr, &res)
+		res, err := s.getJSON(arr)
 		if err != nil {
-			s.logger.Error().Err(err).Msg("error unmarshal JSON from ctx body for update")
 			return model.DocumentManagement{}, err
 		}
 
 		//update to map DB
-		db.DataBaseTest[id] = res
+		db.DataBaseTest[id] = *res
 		return db.DataBaseTest[id], nil
 	}
 

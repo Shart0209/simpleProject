@@ -100,8 +100,8 @@ func (s *server) configureRouter() {
 	}
 
 	doc := s.router.Group("/documents")
-	doc.GET("/list", s.middleware(get))
-	doc.GET("/id/:id", s.middleware(get))
+	doc.GET("/", s.middleware(get))
+	doc.GET("/:id", s.middleware(get))
 	doc.POST("/add", s.middleware(add))
 	doc.PATCH("/update/:id", s.middleware(upd))
 	doc.DELETE("/delete", s.middleware(del))

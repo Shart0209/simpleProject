@@ -1,5 +1,5 @@
 ### Send POST request with json body
-POST http://127.0.0.1:8080/documents/add
+POST http://127.0.0.1:8888/documents/add
 Content-Type: application/json
 
 {

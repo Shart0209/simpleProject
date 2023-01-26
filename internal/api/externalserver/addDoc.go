@@ -13,8 +13,9 @@ type addTransport struct {
 }
 
 func (t *addTransport) handler(ctx *gin.Context) {
+
 	resBody, err := io.ReadAll(ctx.Request.Body)
-	if err != nil {
+	if err != nil || len(resBody) == 0 {
 		t.log.Error().Err(err).Msg("bad read context body")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err})
 		return
