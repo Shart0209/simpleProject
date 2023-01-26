@@ -31,12 +31,14 @@ func (s *service) GetID(id int) (model.DocumentManagement, error) {
 	return model.DocumentManagement{}, fmt.Errorf("could not found record by id=%d", id)
 }
 
-func (s *service) Add(arr *[]byte) (model.DocumentManagement, error) {
+func (s *service) Add(arr *[]byte, files *[]string) (model.DocumentManagement, error) {
 
 	res, err := s.getJSON(arr)
 	if err != nil {
 		return model.DocumentManagement{}, err
 	}
+
+	res.FileName = *files
 
 	//add to map DB
 	db.DataBaseTest[len(db.DataBaseTest)+1] = *res

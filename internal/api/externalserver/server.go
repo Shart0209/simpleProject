@@ -13,7 +13,7 @@ import (
 type Service interface {
 	GetAll() (map[int]model.DocumentManagement, error)
 	GetID(int) (model.DocumentManagement, error)
-	Add(*[]byte) (model.DocumentManagement, error)
+	Add(*[]byte, *[]string) (model.DocumentManagement, error)
 	UpdateID(int, *[]byte) (model.DocumentManagement, error)
 	DeleteID(int) error
 	DeleteALL()
@@ -106,7 +106,6 @@ func (s *server) configureRouter() {
 	doc.PATCH("/update/:id", s.middleware(upd))
 	doc.DELETE("/delete", s.middleware(del))
 	doc.DELETE("/delete/:id", s.middleware(del))
-
 }
 
 func (s *server) middleware(tr transport) func(*gin.Context) {
