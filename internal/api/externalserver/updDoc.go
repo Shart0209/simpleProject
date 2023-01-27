@@ -3,8 +3,8 @@ package externalserver
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
-	"io"
 	"net/http"
+	"simpleProject/pkg/model"
 	"strconv"
 )
 
@@ -14,27 +14,27 @@ type updTransport struct {
 }
 
 func (t *updTransport) handler(ctx *gin.Context) {
-	resBody, err := io.ReadAll(ctx.Request.Body)
-	if err != nil {
-		t.log.Error().Err(err).Msg("bad read context body")
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err})
+	var bindForm model.BindForm
+	if err := ctx.ShouldBind(&bindForm); err != nil {
+		t.log.Error().Err(err).Send()
+
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
 
 	id := ctx.Param("id")
 	idx, err := strconv.Atoi(id)
 	if err != nil {
-		t.log.Error().Err(err).Msg("bad index")
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request error"})
-		return
-	}
-
-	// update document /documents/update
-	data, err := t.svc.UpdateID(idx, &resBody)
-	if err != nil {
+		t.log.Error().Err(err).Send()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, Response{Data: data})
 
+	if err := t.svc.UpdateID(idx, &bindForm); err != nil {
+		t.log.Error().Err(err).Send()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }

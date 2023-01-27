@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	LogLevel string `envconfig:"LOG_LEVEL" default:"debug"`
-	Listen   string `envconfig:"LISTEN" default:":8888"`
+	LogLevel    string `envconfig:"LOG_LEVEL" default:"debug"`
+	Listen      string `envconfig:"LISTEN" default:":8080"`
+	FilesFolder string `envconfig:"FILES_FOLDER" default:"upload"`
 }
 
 func NewConfig() (*Config, error) {

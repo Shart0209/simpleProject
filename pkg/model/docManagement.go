@@ -1,18 +1,24 @@
 package model
 
 import (
+	"mime/multipart"
 	"time"
 )
 
 type DocumentManagement struct {
-	Id          uint      `json:"id" binding:"required,omitempty"`
-	Name        string    `json:"name" binding:"required,omitempty"`
-	Date        time.Time `json:"date" binding:"required,omitempty"`        //дата заключения ГК
-	Description string    `json:"description" binding:"required,omitempty"` //примечание
-	FileName    []string  `json:"filename" binding:"required,omitempty"`    //UUID
-	StartDate   time.Time `json:"start_date" binding:"required,omitempty"`  //срок действия ГК - начало
-	EndDate     time.Time `json:"end_date" binding:"required,omitempty"`    //срок действия ГК - конец
-	Distributor string    `json:"distributor" binding:"required,omitempty"` //поставщик услуг
-	Method      string    `json:"method" binding:"required,omitempty"`      //метод проведения закупки
-	Sum         float64   `json:"sum" binding:"required,omitempty"`         //сумма ГК
+	Id          uint                         `form:"id,required,omitempty"`
+	Name        string                       `form:"name,required,omitempty"`
+	Date        time.Time                    `form:"date,required"`          //дата заключения ГК
+	Description string                       `form:"description,omitempty"`  //примечание
+	FileName    map[string]map[string]string `form:"filename,omitempty"`     //UUID
+	StartDate   time.Time                    `form:"start_date,omitempty"`   //срок действия ГК - начало
+	EndDate     time.Time                    `form:"end_date,omitempty"`     //срок действия ГК - конец
+	Distributor string                       `form:"distributor,omitempty"`  //поставщик услуг
+	Method      string                       `form:"method,omitempty"`       //метод проведения закупки
+	Sum         float64                      `form:"sum,required,omitempty"` //сумма ГК
+}
+
+type BindForm struct {
+	Files []*multipart.FileHeader `form:"files,omitempty"`
+	*DocumentManagement
 }

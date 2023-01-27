@@ -2,64 +2,61 @@ package api
 
 import (
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/google/uuid"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 	"simpleProject/pkg/db"
 	"simpleProject/pkg/model"
+	"strconv"
 )
 
-func (s *service) getJSON(arr *[]byte) (*model.DocumentManagement, error) {
-	var res model.DocumentManagement
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-
-	if err := json.Unmarshal(*arr, &res); err != nil {
-		s.logger.Error().Err(err).Msg("error decoding json response")
-		return &model.DocumentManagement{}, err
-	}
-	return &res, nil
+func (s *service) GetAll() (*map[int]model.DocumentManagement, error) {
+	return &db.DataBaseTest, nil
 }
 
-func (s *service) GetAll() (map[int]model.DocumentManagement, error) {
-	return db.DataBaseTest, nil
-}
-
-func (s *service) GetID(id int) (model.DocumentManagement, error) {
+func (s *service) GetID(id int) (*model.DocumentManagement, error) {
 	if data, ok := db.DataBaseTest[id]; ok {
-		return data, nil
+		return &data, nil
 	}
 
 	s.logger.Error().Msg("error while executing query get ID")
-	return model.DocumentManagement{}, fmt.Errorf("could not found record by id=%d", id)
+	return &model.DocumentManagement{}, fmt.Errorf("could not found record by id=%d", id)
 }
 
-func (s *service) Add(arr *[]byte, files *[]string) (model.DocumentManagement, error) {
+func (s *service) Add(bindForm *model.BindForm) error {
 
-	res, err := s.getJSON(arr)
-	if err != nil {
-		return model.DocumentManagement{}, err
-	}
-
-	res.FileName = *files
-
-	//add to map DB
-	db.DataBaseTest[len(db.DataBaseTest)+1] = *res
-
-	return *res, nil
-}
-
-func (s *service) UpdateID(id int, arr *[]byte) (model.DocumentManagement, error) {
-
-	if _, ok := db.DataBaseTest[id]; ok {
-		res, err := s.getJSON(arr)
+	if files := bindForm.Files; len(files) != 0 {
+		arrNameFile, err := s.GetNameFile(files)
 		if err != nil {
-			return model.DocumentManagement{}, err
+			return err
 		}
-
-		//update to map DB
-		db.DataBaseTest[id] = *res
-		return db.DataBaseTest[id], nil
+		bindForm.DocumentManagement.FileName = *arrNameFile
 	}
 
-	return model.DocumentManagement{}, fmt.Errorf("failed to update record by id=%d", id)
+	db.DataBaseTest[len(db.DataBaseTest)+1] = *bindForm.DocumentManagement
+
+	return nil
+}
+
+func (s *service) UpdateID(id int, bindForm *model.BindForm) error {
+
+	if _, ok := db.DataBaseTest[id]; !ok {
+		return fmt.Errorf("not found")
+	}
+
+	if files := bindForm.Files; len(files) != 0 {
+		arrNameFile, err := s.GetNameFile(files)
+		if err != nil {
+			return err
+		}
+		//TODO падает при поллучении одного поля files
+		bindForm.FileName = *arrNameFile
+	}
+	db.DataBaseTest[id] = *bindForm.DocumentManagement
+
+	return nil
 }
 
 func (s *service) DeleteID(id int) error {
@@ -74,4 +71,54 @@ func (s *service) DeleteID(id int) error {
 
 func (s *service) DeleteALL() {
 	db.DataBaseTest = map[int]model.DocumentManagement{}
+}
+
+func (s *service) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
+}
+
+func (s *service) GetNameFile(files []*multipart.FileHeader) (*map[string]map[string]string, error) {
+
+	arrNameFile := make(map[string]map[string]string, 0)
+
+	baseDir, err := filepath.Abs(s.cfg.FilesFolder)
+	if err != nil {
+		s.logger.Error().Err(err).Send()
+		return nil, fmt.Errorf("path folder to ./upload not found")
+	}
+
+	fileID := uuid.New().String()
+
+	for i, file := range files {
+		fName := filepath.Base(file.Filename)
+		filename := fileID + "-" + strconv.Itoa(i) + filepath.Ext(fName)
+		arrNameFile[fName] = map[string]string{
+			"name": filename,
+			"size": strconv.Itoa(int(file.Size)),
+		}
+
+		filePath := baseDir + string(os.PathSeparator) + filename
+		if err := s.SaveUploadedFile(file, filePath); err != nil {
+			s.logger.Error().Err(err).Send()
+			return nil, fmt.Errorf("upload file err: %s", err.Error())
+		}
+	}
+	return &arrNameFile, nil
+}
+
+func (s *service) DeleteFile(arr *[]string) error {
+	return nil
 }

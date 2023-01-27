@@ -11,10 +11,10 @@ import (
 )
 
 type Service interface {
-	GetAll() (map[int]model.DocumentManagement, error)
-	GetID(int) (model.DocumentManagement, error)
-	Add(*[]byte, *[]string) (model.DocumentManagement, error)
-	UpdateID(int, *[]byte) (model.DocumentManagement, error)
+	GetAll() (*map[int]model.DocumentManagement, error)
+	GetID(int) (*model.DocumentManagement, error)
+	Add(*model.BindForm) error
+	UpdateID(int, *model.BindForm) error
 	DeleteID(int) error
 	DeleteALL()
 }
