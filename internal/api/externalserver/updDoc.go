@@ -15,6 +15,7 @@ type updTransport struct {
 
 func (t *updTransport) handler(ctx *gin.Context) {
 	var bindForm model.BindForm
+
 	if err := ctx.ShouldBind(&bindForm); err != nil {
 		t.log.Error().Err(err).Send()
 

@@ -6,6 +6,7 @@ import (
 	"simpleProject/internal/api/externalserver"
 	libHTTP "simpleProject/pkg/http"
 	"simpleProject/pkg/sig"
+	"simpleProject/pkg/util"
 
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
@@ -43,6 +44,11 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 	g.Go(func() error {
 		return sig.Listen(ctx)
 	})
+
+	if err := util.CreateFolder(&s.cfg.FilesFolder); err != nil {
+		s.baseLogger.Error().Err(err).Send()
+		return err
+	}
 
 	s.externalServer.Init(s.cfg.Listen)
 	g.Go(libHTTP.MakeServerRunner(ctx,

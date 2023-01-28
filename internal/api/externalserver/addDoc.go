@@ -15,6 +15,7 @@ type addTransport struct {
 func (t *addTransport) handler(ctx *gin.Context) {
 
 	var bindForm model.BindForm
+
 	if err := ctx.ShouldBind(&bindForm); err != nil {
 		t.log.Error().Err(err).Send()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})

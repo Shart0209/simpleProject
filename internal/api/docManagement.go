@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"simpleProject/pkg/db"
 	"simpleProject/pkg/model"
+	"simpleProject/pkg/util"
 	"strconv"
 )
 
@@ -28,7 +29,7 @@ func (s *service) GetID(id int) (*model.DocumentManagement, error) {
 func (s *service) Add(bindForm *model.BindForm) error {
 
 	if files := bindForm.Files; len(files) != 0 {
-		arrNameFile, err := s.GetNameFile(files)
+		arrNameFile, err := s.GetNameAndSaveFile(files)
 		if err != nil {
 			return err
 		}
@@ -47,7 +48,7 @@ func (s *service) UpdateID(id int, bindForm *model.BindForm) error {
 	}
 
 	if files := bindForm.Files; len(files) != 0 {
-		arrNameFile, err := s.GetNameFile(files)
+		arrNameFile, err := s.GetNameAndSaveFile(files)
 		if err != nil {
 			return err
 		}
@@ -69,8 +70,15 @@ func (s *service) DeleteID(id int) error {
 	return fmt.Errorf("failed to delete record by id=%d", id)
 }
 
-func (s *service) DeleteALL() {
+func (s *service) DeleteALL() error {
 	db.DataBaseTest = map[int]model.DocumentManagement{}
+
+	arr := make([]string, 0)
+	if err := util.DeleteFile(&arr, &s.cfg.FilesFolder); err != nil {
+		s.logger.Error().Err(err).Send()
+		return err
+	}
+	return nil
 }
 
 func (s *service) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
@@ -90,7 +98,7 @@ func (s *service) SaveUploadedFile(file *multipart.FileHeader, dst string) error
 	return err
 }
 
-func (s *service) GetNameFile(files []*multipart.FileHeader) (*map[string]map[string]string, error) {
+func (s *service) GetNameAndSaveFile(files []*multipart.FileHeader) (*map[string]map[string]string, error) {
 
 	arrNameFile := make(map[string]map[string]string, 0)
 
@@ -110,15 +118,11 @@ func (s *service) GetNameFile(files []*multipart.FileHeader) (*map[string]map[st
 			"size": strconv.Itoa(int(file.Size)),
 		}
 
-		filePath := baseDir + string(os.PathSeparator) + filename
+		filePath := filepath.Join(baseDir, filename)
 		if err := s.SaveUploadedFile(file, filePath); err != nil {
 			s.logger.Error().Err(err).Send()
 			return nil, fmt.Errorf("upload file err: %s", err.Error())
 		}
 	}
 	return &arrNameFile, nil
-}
-
-func (s *service) DeleteFile(arr *[]string) error {
-	return nil
 }

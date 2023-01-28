@@ -6,9 +6,17 @@ import (
 )
 
 type Config struct {
-	LogLevel    string `envconfig:"LOG_LEVEL" default:"debug"`
-	Listen      string `envconfig:"LISTEN" default:":8080"`
-	FilesFolder string `envconfig:"FILES_FOLDER" default:"upload"`
+	LogLevel      string `envconfig:"LOG_LEVEL" default:"debug"`
+	Listen        string `envconfig:"LISTEN" default:":8080"`
+	FilesFolder   string `envconfig:"FILES_FOLDER" default:"upload"`
+	Postgresql    *StorageConfig
+	Authorization *Authorization
+}
+
+type StorageConfig struct {
+}
+
+type Authorization struct {
 }
 
 func NewConfig() (*Config, error) {

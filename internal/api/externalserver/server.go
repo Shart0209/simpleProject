@@ -16,7 +16,7 @@ type Service interface {
 	Add(*model.BindForm) error
 	UpdateID(int, *model.BindForm) error
 	DeleteID(int) error
-	DeleteALL()
+	DeleteALL() error
 }
 
 type Server interface {
