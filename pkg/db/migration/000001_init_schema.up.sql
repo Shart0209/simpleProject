@@ -18,4 +18,5 @@ CREATE TABLE "files" (
   "file_size" int
 );
 
+
 ALTER TABLE "documents" ADD FOREIGN KEY ("filesname") REFERENCES "files" ("id");
