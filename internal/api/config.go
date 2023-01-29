@@ -6,17 +6,21 @@ import (
 )
 
 type Config struct {
+	IsDebug       string `envconfig:"IS_DEBUG" default:"true"`
 	LogLevel      string `envconfig:"LOG_LEVEL" default:"debug"`
 	Listen        string `envconfig:"LISTEN" default:":8080"`
 	FilesFolder   string `envconfig:"FILES_FOLDER" default:"upload"`
-	Postgresql    *StorageConfig
-	Authorization *Authorization
+	Postgres      *PostgresConfig
+	Authorization *AuthorizationConfig
 }
 
-type StorageConfig struct {
+type PostgresConfig struct {
+	PostgresPSWD string `envconfig:"POSTGRES_PASSWORD" default:"1234qwER"`
+	PostgresUSER string `envconfig:"POSTGRES_USER" default:"root"`
+	PostgresDB   string `envconfig:"POSTGRES_DB" default:"postgresDB"`
 }
 
-type Authorization struct {
+type AuthorizationConfig struct {
 }
 
 func NewConfig() (*Config, error) {
