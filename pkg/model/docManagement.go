@@ -15,7 +15,8 @@ type DocumentManagement struct {
 	EndDate     time.Time                    `form:"end_date" binding:"required" time_format:"2006-01-02" db:"end_date"`     //срок действия ГК - конец
 	Distributor string                       `form:"distributor" binding:"omitempty" db:"distributor"`                       //поставщик услуг
 	Method      string                       `form:"method" binding:"required" db:"method"`                                  //метод проведения закупки
-	Sum         float64                      `form:"sum" binding:"required" db:"sum"`                                        //сумма ГК
+	Price       float64                      `form:"sum" binding:"required" db:"price"`                                      //сумма ГК
+	CreatedAt   time.Time                    `form:"created_at" binding:"required" db:"created_at"`
 }
 
 type BindForm struct {

@@ -1,7 +1,7 @@
 CREATE TABLE "documents" (
   "id" int PRIMARY KEY,
   "name" varchar NOT NULL,
-  "create_gk" timestamp NOT NULL,
+  "date" timestamp NOT NULL,
   "description" text,
   "filesname" int,
   "start_date" timestamp,

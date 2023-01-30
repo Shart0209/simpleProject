@@ -15,8 +15,10 @@ type Config struct {
 }
 
 type PostgresConfig struct {
-	PostgresPSWD string `envconfig:"POSTGRES_PASSWORD" default:"1234qwER"`
+	PostgresHOST string `envconfig:"POSTGRES_HOST" default:"localhost"`
+	PostgresPORT string `envconfig:"POSTGRES_PORT" default:"5432"`
 	PostgresUSER string `envconfig:"POSTGRES_USER" default:"root"`
+	PostgresPSWD string `envconfig:"POSTGRES_PASSWORD" default:"1234qwER"`
 	PostgresDB   string `envconfig:"POSTGRES_DB" default:"postgresDB"`
 }
 

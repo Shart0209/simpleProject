@@ -22,7 +22,7 @@ func (t *addTransport) handler(ctx *gin.Context) {
 		return
 	}
 
-	if err := t.svc.Add(&bindForm); err != nil {
+	if err := t.svc.Create(&bindForm); err != nil {
 		t.log.Error().Err(err).Send()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return

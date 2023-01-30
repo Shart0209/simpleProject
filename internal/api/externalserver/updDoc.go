@@ -31,7 +31,7 @@ func (t *updTransport) handler(ctx *gin.Context) {
 		return
 	}
 
-	if err := t.svc.UpdateID(idx, &bindForm); err != nil {
+	if err := t.svc.Update(idx, &bindForm); err != nil {
 		t.log.Error().Err(err).Send()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return

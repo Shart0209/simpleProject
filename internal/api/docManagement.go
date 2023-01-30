@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"simpleProject/pkg/db"
 	"simpleProject/pkg/model"
-	"simpleProject/pkg/util"
 	"strconv"
 )
 
@@ -17,16 +16,16 @@ func (s *service) GetAll() (*map[int]model.DocumentManagement, error) {
 	return &db.DataBaseTest, nil
 }
 
-func (s *service) GetID(id int) (*model.DocumentManagement, error) {
+func (s *service) GetByID(id int) (*model.DocumentManagement, error) {
 	if data, ok := db.DataBaseTest[id]; ok {
 		return &data, nil
 	}
 
-	s.logger.Error().Msg("error while executing query get ID")
+	s.logger.Error().Msg("errors while executing query get ID")
 	return &model.DocumentManagement{}, fmt.Errorf("could not found record by id=%d", id)
 }
 
-func (s *service) Add(bindForm *model.BindForm) error {
+func (s *service) Create(bindForm *model.BindForm) error {
 
 	if files := bindForm.Files; len(files) != 0 {
 		arrNameFile, err := s.GetNameAndSaveFile(files)
@@ -41,7 +40,7 @@ func (s *service) Add(bindForm *model.BindForm) error {
 	return nil
 }
 
-func (s *service) UpdateID(id int, bindForm *model.BindForm) error {
+func (s *service) Update(id int, bindForm *model.BindForm) error {
 
 	if _, ok := db.DataBaseTest[id]; !ok {
 		return fmt.Errorf("not found")
@@ -60,7 +59,7 @@ func (s *service) UpdateID(id int, bindForm *model.BindForm) error {
 	return nil
 }
 
-func (s *service) DeleteID(id int) error {
+func (s *service) Delete(id int) error {
 
 	if _, ok := db.DataBaseTest[id]; ok {
 		delete(db.DataBaseTest, id)
@@ -68,17 +67,6 @@ func (s *service) DeleteID(id int) error {
 	}
 
 	return fmt.Errorf("failed to delete record by id=%d", id)
-}
-
-func (s *service) DeleteALL() error {
-	db.DataBaseTest = map[int]model.DocumentManagement{}
-
-	arr := make([]string, 0)
-	if err := util.DeleteFile(&arr, &s.cfg.FilesFolder); err != nil {
-		s.logger.Error().Err(err).Send()
-		return err
-	}
-	return nil
 }
 
 func (s *service) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
