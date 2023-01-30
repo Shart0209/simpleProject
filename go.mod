@@ -1,4 +1,4 @@
-module simpleproject
+module simpleProject
 
 go 1.19
 
