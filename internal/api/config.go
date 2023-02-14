@@ -10,16 +10,16 @@ type Config struct {
 	LogLevel      string `envconfig:"LOG_LEVEL" default:"debug"`
 	Listen        string `envconfig:"LISTEN" default:":8080"`
 	FilesFolder   string `envconfig:"FILES_FOLDER" default:"upload"`
-	Postgres      *PostgresConfig
+	Postgres      *StorageConfig
 	Authorization *AuthorizationConfig
 }
 
-type PostgresConfig struct {
-	PostgresHOST string `envconfig:"POSTGRES_HOST" default:"localhost"`
-	PostgresPORT string `envconfig:"POSTGRES_PORT" default:"5432"`
-	PostgresUSER string `envconfig:"POSTGRES_USER" default:"root"`
-	PostgresPSWD string `envconfig:"POSTGRES_PASSWORD" default:"1234qwER"`
-	PostgresDB   string `envconfig:"POSTGRES_DB" default:"postgresDB"`
+type StorageConfig struct {
+	Host string `envconfig:"POSTGRES_HOST" default:"localhost"`
+	Port string `envconfig:"POSTGRES_PORT" default:"5432"`
+	User string `envconfig:"POSTGRES_USER" default:"root"`
+	Pswd string `envconfig:"POSTGRES_PASSWORD" default:"1234qwER"`
+	Db   string `envconfig:"POSTGRES_DB" default:"postgres"`
 }
 
 type AuthorizationConfig struct {
