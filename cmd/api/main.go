@@ -17,7 +17,7 @@ func main() {
 	}
 	g, ctx := errgroup.WithContext(context.Background())
 
-	svc, err := api.New(ctx, g, cfg)
+	svc, err := api.New(ctx, cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("errors create service")
 	}

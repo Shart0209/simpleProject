@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
+	"time"
 )
 
 type Config struct {
@@ -15,11 +16,13 @@ type Config struct {
 }
 
 type StorageConfig struct {
-	Host string `envconfig:"POSTGRES_HOST" default:"localhost"`
-	Port string `envconfig:"POSTGRES_PORT" default:"5432"`
-	User string `envconfig:"POSTGRES_USER" default:"root"`
-	Pswd string `envconfig:"POSTGRES_PASSWORD" default:"1234qwER"`
-	Db   string `envconfig:"POSTGRES_DB" default:"postgres"`
+	Host           string        `envconfig:"POSTGRES_HOST" default:"localhost" required:"true"`
+	Port           string        `envconfig:"POSTGRES_PORT" default:"5432" required:"true"`
+	User           string        `envconfig:"POSTGRES_USER" default:"postgres" required:"true"`
+	Pswd           string        `envconfig:"POSTGRES_PASSWORD" default:"1234qwER" required:"true"`
+	DbName         string        `envconfig:"POSTGRES_DB_NAME" default:"test_db" required:"true"`
+	ConnectTimeout time.Duration `envconfig:"POSTGRES_CONNECT_TIMEOUT" default:"1m" required:"true"`
+	MaxConns       int           `envconfig:"POSTGRES_MAX_CONNS" default:"32"`
 }
 
 type AuthorizationConfig struct {

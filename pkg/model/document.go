@@ -11,17 +11,17 @@ type FileName struct {
 }
 
 type DocumentManagement struct {
-	Id          uint      `form:"id" binding:"required" db:"id"`
-	Name        string    `form:"name" binding:"required" db:"name"`
-	Date        time.Time `form:"date" binding:"required" time_format:"2006-01-02" db:"date"`             //дата заключения ГК
-	Description string    `form:"description" binding:"omitempty" db:"description"`                       //примечание
-	FileName    *FileName `form:"filename" binding:"omitempty" db:"file_name"`                            //UUID
-	StartDate   time.Time `form:"start_date" binding:"required" time_format:"2006-01-02" db:"start_date"` //срок действия ГК - начало
-	EndDate     time.Time `form:"end_date" binding:"required" time_format:"2006-01-02" db:"end_date"`     //срок действия ГК - конец
-	Distributor string    `form:"distributor" binding:"omitempty" db:"distributor"`                       //поставщик услуг
-	Method      string    `form:"method" binding:"required" db:"method"`                                  //метод проведения закупки
-	Price       float64   `form:"sum" binding:"required" db:"price"`                                      //сумма ГК
-	CreatedAt   time.Time `form:"created_at" binding:"required" db:"created_at"`
+	Id          uint      `form:"id" binding:"required" store:"id"`
+	Name        string    `form:"name" binding:"required" store:"name"`
+	Date        time.Time `form:"date" binding:"required" time_format:"2006-01-02" store:"date"`             //дата заключения ГК
+	Description string    `form:"description" binding:"omitempty" store:"description"`                       //примечание
+	FileName    *FileName `form:"filename" binding:"omitempty" store:"file_name"`                            //UUID
+	StartDate   time.Time `form:"start_date" binding:"required" time_format:"2006-01-02" store:"start_date"` //срок действия ГК - начало
+	EndDate     time.Time `form:"end_date" binding:"required" time_format:"2006-01-02" store:"end_date"`     //срок действия ГК - конец
+	Distributor string    `form:"distributor" binding:"omitempty" store:"distributor"`                       //поставщик услуг
+	Method      string    `form:"method" binding:"required" store:"method"`                                  //метод проведения закупки
+	Price       float64   `form:"sum" binding:"required" store:"price"`                                      //сумма ГК
+	CreatedAt   time.Time `form:"created_at" binding:"required" store:"created_at"`
 }
 
 type BindForm struct {

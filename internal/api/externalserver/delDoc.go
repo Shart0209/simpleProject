@@ -19,21 +19,18 @@ func (t *delTransport) handler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request errors"})
 	}
 
-
-
-		idx, err := strconv.Atoi(id)
-		if err != nil {
-			t.log.Error().Err(err).Msg("bad index")
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request errors"})
-			return
-		}
-
-		err = t.svc.Delete(idx)
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
-			return
-		}
-		ctx.JSON(http.StatusOK, Response{Data: "entry deleted"})
+	idx, err := strconv.Atoi(id)
+	if err != nil {
+		t.log.Error().Err(err).Msg("bad index")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request errors"})
 		return
 	}
+
+	err = t.svc.Delete(idx)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, Response{Data: "entry deleted"})
+	return
 }

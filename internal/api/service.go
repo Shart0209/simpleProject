@@ -25,7 +25,7 @@ type service struct {
 	externalServer externalserver.Server
 }
 
-func New(ctx context.Context, g *errgroup.Group, cfg *Config) (Service, error) {
+func New(ctx context.Context, cfg *Config) (Service, error) {
 	logger := newLogger(cfg.LogLevel)
 
 	svc := service{
