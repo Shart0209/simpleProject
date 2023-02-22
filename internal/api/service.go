@@ -6,6 +6,8 @@ import (
 	"simpleProject/internal/api/externalserver"
 	libHTTP "simpleProject/pkg/http"
 	"simpleProject/pkg/sig"
+	pgStore "simpleProject/pkg/store/client"
+	"simpleProject/pkg/store/client/postgres"
 	"simpleProject/pkg/util"
 
 	"github.com/rs/zerolog"
@@ -23,6 +25,7 @@ type service struct {
 	baseLogger     zerolog.Logger
 	logger         zerolog.Logger
 	externalServer externalserver.Server
+	pgStore        pgStore.Store
 }
 
 func New(ctx context.Context, cfg *Config) (Service, error) {
@@ -54,6 +57,17 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 	g.Go(libHTTP.MakeServerRunner(ctx,
 		s.baseLogger.With().Str("component", "external_http_runner").Logger(),
 		s.externalServer.GetServer()))
+
+	pgStore, err := postgres.NewStore(
+		context.Background(),
+		s.cfg.Postgres,
+		s.baseLogger.With().Str("component", "postgres store").Logger())
+	if err != nil {
+		return err
+	}
+	s.pgStore = pgStore
+
+	s.pgStore.GetRepository(nil).GetByName()
 	return nil
 }
 
