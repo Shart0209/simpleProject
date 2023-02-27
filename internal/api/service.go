@@ -4,10 +4,11 @@ import (
 	"context"
 	"os"
 	"simpleProject/internal/api/externalserver"
+	PGStore "simpleProject/pkg/db/store"
+	"simpleProject/pkg/db/store/postgres"
 	libHTTP "simpleProject/pkg/http"
 	"simpleProject/pkg/sig"
-	pgStore "simpleProject/pkg/store/client"
-	"simpleProject/pkg/store/client/postgres"
+
 	"simpleProject/pkg/util"
 
 	"github.com/rs/zerolog"
@@ -25,7 +26,7 @@ type service struct {
 	baseLogger     zerolog.Logger
 	logger         zerolog.Logger
 	externalServer externalserver.Server
-	pgStore        pgStore.Store
+	pgStore        PGStore.Store
 }
 
 func New(ctx context.Context, cfg *Config) (Service, error) {
@@ -58,21 +59,31 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 		s.baseLogger.With().Str("component", "external_http_runner").Logger(),
 		s.externalServer.GetServer()))
 
-	pgStore, err := postgres.NewStore(
+	pgStorage, err := postgres.NewStore(
 		context.Background(),
-		s.cfg.Postgres,
-		s.baseLogger.With().Str("component", "postgres store").Logger())
+		&postgres.Config{
+			PostgresHost:           s.cfg.Postgres.Host,
+			PostgresUsername:       s.cfg.Postgres.User,
+			PostgresPassword:       s.cfg.Postgres.Pswd,
+			PostgresDBName:         s.cfg.Postgres.DbName,
+			PostgresPort:           s.cfg.Postgres.Port,
+			PostgresConnectTimeout: s.cfg.Postgres.ConnectTimeout,
+			PostgresMaxConns:       s.cfg.Postgres.MaxConns,
+		},
+		s.baseLogger.With().Str("component", "postgres db").Logger())
 	if err != nil {
 		return err
 	}
-	s.pgStore = pgStore
+	s.pgStore = pgStorage
 
-	s.pgStore.GetRepository(nil).GetByName()
 	return nil
 }
 
 func (s *service) Stop() error {
 	// release resources
+	if err := s.pgStore.Stop(); err != nil {
+		return err
+	}
 
 	return nil
 }

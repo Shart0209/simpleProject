@@ -18,6 +18,7 @@ type Store interface {
 	GetLogger() zerolog.Logger
 	GetExecutor() (Executor, error)
 	GetRepository(ex Executor) Repository
+	GetCtx() context.Context
 }
 
 //

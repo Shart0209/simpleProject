@@ -3,7 +3,7 @@ CREATE TABLE distributors
     distributor_id integer GENERATED ALWAYS AS IDENTITY,
     company_name   varchar(255) NOT NULL,
     contact_name   varchar(100),
-    city           varchar(50),
+    company_city   varchar(50),
     region         varchar(100),
 
     CONSTRAINT pk_distributor_id PRIMARY KEY (distributor_id)
@@ -19,9 +19,9 @@ CREATE TABLE categories
 
 CREATE TABLE authors
 (
-    author_id  integer GENERATED ALWAYS AS IDENTITY,
-    first_name varchar(100) NOT NULL,
-    last_name  varchar(100) NOT NULL,
+    author_id   integer GENERATED ALWAYS AS IDENTITY,
+    first_name  varchar(100) NOT NULL,
+    last_name   varchar(100) NOT NULL,
     middle_name varchar(100),
 
     CONSTRAINT pk_author_id PRIMARY KEY (author_id)
@@ -55,9 +55,9 @@ CREATE TABLE contracts
 CREATE TABLE files
 (
     file_id     integer GENERATED ALWAYS AS IDENTITY,
-    file_name   uuid DEFAULT (gen_random_uuid()) NOT NULL,
+    file_name   varchar(40)  NOT NULL,
     file_size   float,
-    file_path   varchar(255)                     NOT NULL,
+    file_path   varchar(255) NOT NULL,
     contract_id integer,
 
     CONSTRAINT pk_file_id PRIMARY KEY (file_id),

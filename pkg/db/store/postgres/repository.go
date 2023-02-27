@@ -1,7 +1,8 @@
 package postgres
 
 import (
-	pgStore "simpleProject/pkg/store/client"
+	"fmt"
+	pgStore "simpleProject/pkg/db/store"
 )
 
 type repository struct {
@@ -16,14 +17,34 @@ func NewRepository(ex pgStore.Executor, s pgStore.Store) pgStore.Repository {
 	}
 }
 
-func (r *repository) All() error {
+func (r *repository) GetAll() error {
 	//TODO implement me
 	panic("implement me")
+
 }
 
-func (r *repository) GetByName(id int64) error {
-	//TODO implement me
-	panic("implement me")
+func (r *repository) GetByName(obj interface{}, query string, args ...interface{}) error {
+	ctx := r.store.GetCtx()
+	conn, err := r.store.GetExecutor()
+	if err != nil {
+		return err
+	}
+
+	rows, err := conn.Query(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(&obj.contract_id, &description); err != nil {
+
+		}
+	}
+
+	fmt.Println(rows)
+
+	return nil
 }
 
 func (r *repository) Create() error {

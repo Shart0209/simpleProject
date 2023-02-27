@@ -22,7 +22,7 @@ func MakeServerRunner(ctx context.Context, logger zerolog.Logger, server *http.S
 
 		select {
 		case err := <-errCh:
-			logger.Info().Msg("http server is stoping")
+			logger.Info().Msg("http server is stopping")
 			return err
 		case <-ctx.Done():
 			shutdownCtxTimeout, cancel := context.WithTimeout(context.Background(), time.Second*5)

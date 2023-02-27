@@ -13,11 +13,20 @@ func (s *service) GetAll() (*map[int]model.DocumentManagement, error) {
 }
 
 func (s *service) GetByID(id int) (*model.DocumentManagement, error) {
-	//if data, ok := db.DataBaseTest[id]; ok {
-	//	return &data, nil
-	//}
-	//
-	//s.logger.Error().Msg("errors while executing query get ID")
+
+	getById := s.pgStore.GetRepository(nil)
+
+	doc := &model.DocumentManagement{}
+	//query := `SELECT contract_id, title, contr_number, contr_date, price, start_date, end_date, description, created_at, company_name, city, category_name, file_name, file_size FROM contracts LEFT JOIN files USING (contract_id) JOIN distributors USING (distributor_id) JOIN categories USING (category_id)	JOIN authors USING (author_id)	WHERE contract_id=$1`
+	query := `SELECT contract_id, title, contr_number, contr_date, price, file_name, file_size FROM contracts LEFT JOIN files USING (contract_id) JOIN categories USING (category_id) WHERE contract_id=$1`
+	err := getById.GetByName(doc, query, id)
+	if err != nil {
+		s.logger.Error().Msg("errors while executing query get ID")
+		return nil, err
+	}
+
+	fmt.Println(getById)
+
 	//return &model.DocumentManagement{}, fmt.Errorf("could not found record by id=%d", id)
 
 	return nil, nil

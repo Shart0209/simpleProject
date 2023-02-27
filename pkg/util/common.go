@@ -35,7 +35,7 @@ func DeleteFile(arr *[]string, path *string) error {
 			fileName := file.Name()
 			filePath := filepath.Join(baseDir, fileName)
 
-			os.Remove(filePath)
+			_ = os.Remove(filePath)
 		}
 	}
 
