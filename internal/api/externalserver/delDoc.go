@@ -26,11 +26,11 @@ func (t *delTransport) handler(ctx *gin.Context) {
 		return
 	}
 
-	err = t.svc.Delete(idx)
+	data, err := t.svc.Delete(idx)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, Response{Data: "entry deleted"})
+	ctx.JSON(http.StatusOK, Response{Data: data.String()})
 	return
 }

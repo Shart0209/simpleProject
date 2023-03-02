@@ -20,13 +20,18 @@ type Service interface {
 	Stop() error
 }
 
+type store struct {
+	pgStore PGStore.Store
+	repo    PGStore.Repository
+}
+
 type service struct {
 	ctx            context.Context
 	cfg            *Config
 	baseLogger     zerolog.Logger
 	logger         zerolog.Logger
 	externalServer externalserver.Server
-	pgStore        PGStore.Store
+	store          store
 }
 
 func New(ctx context.Context, cfg *Config) (Service, error) {
@@ -74,14 +79,20 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 	if err != nil {
 		return err
 	}
-	s.pgStore = pgStorage
+
+	s.store.pgStore = pgStorage
+	ex, err := pgStorage.GetExecutor()
+	if err != nil {
+		return err
+	}
+	s.store.repo = pgStorage.GetRepository(ex)
 
 	return nil
 }
 
 func (s *service) Stop() error {
 	// release resources
-	if err := s.pgStore.Stop(); err != nil {
+	if err := s.store.pgStore.Stop(); err != nil {
 		return err
 	}
 

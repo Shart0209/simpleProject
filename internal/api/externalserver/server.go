@@ -2,6 +2,7 @@ package externalserver
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgconn"
 	"net/http"
 	"simpleProject/pkg/model"
 
@@ -11,11 +12,11 @@ import (
 )
 
 type Service interface {
-	GetAll() (*map[int]model.DocumentManagement, error)
+	GetAll() (*[]model.DocumentManagement, error)
 	GetByID(int) (*model.DocumentManagement, error)
 	Create(*model.BindForm) error
 	Update(int, *model.BindForm) error
-	Delete(int) error
+	Delete(int) (pgconn.CommandTag, error)
 }
 
 type Server interface {
@@ -95,7 +96,7 @@ func (s *server) configureRouter() {
 
 	del := &delTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "delete all/id document").Logger(),
+		log: s.logger.With().Str("transport", "delete by id document").Logger(),
 	}
 
 	doc := s.router.Group("/documents")
@@ -103,7 +104,6 @@ func (s *server) configureRouter() {
 	doc.GET("/:id", s.middleware(get))
 	doc.POST("/add", s.middleware(add))
 	doc.PATCH("/update/:id", s.middleware(upd))
-	doc.DELETE("/delete", s.middleware(del))
 	doc.DELETE("/delete/:id", s.middleware(del))
 }
 

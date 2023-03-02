@@ -2,7 +2,7 @@ INSERT INTO categories
 VALUES (DEFAULT, 'Аукцион'),
        (DEFAULT, 'Единственный поставщик');
 
-INSERT INTO distributors (company_name, contact_name, city, region)
+INSERT INTO distributors (company_name, contact_name, company_city, region)
 VALUES ('ПАО Ростелеком', 'Sponge Bob', 'Чита', 'Забайкальский край'),
        ('ПАО МТС', 'Sponge Bob', 'Чита', 'Забайкальский край'),
        ('ПАО Мегафон', 'Sponge Bob', 'Чита', 'Забайкальский край');

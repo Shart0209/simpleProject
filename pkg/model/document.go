@@ -5,12 +5,13 @@ import (
 	"time"
 )
 
-type Files struct {
-	files []map[string]int // []map[file_name]size
+type File struct {
+	Name string  `form:"file_name" binding:"omitempty" db:"file_name, omitempty"`
+	Size float64 `form:"file_size" binding:"omitempty" db:"file_size, omitempty"`
 }
 
 type DocumentManagement struct {
-	Id          uint      `form:"id" binding:"required" db:"contract_id"`
+	Id          uint      `form:"id" binding:"omitempty" db:"contract_id"`
 	Title       string    `form:"title" binding:"required" db:"title"`
 	Number      string    `form:"number" binding:"required" db:"contr_number"`
 	Date        time.Time `form:"date" binding:"required" time_format:"2006-01-02" db:"contr_date"`
@@ -21,11 +22,11 @@ type DocumentManagement struct {
 	Description string    `form:"description" binding:"omitempty" db:"description"`
 	Distributor string    `form:"distributor" binding:"omitempty" db:"company_name"`
 	City        string    `form:"city" binding:"omitempty" db:"company_city"`
-	CreatedAt   time.Time `form:"created_at" binding:"required" db:"created_at"`
-	Files       *Files
+	CreatedAt   time.Time `form:"created_at" binding:"omitempty" db:"created_at"`
+	Files       []File
 }
 
 type BindForm struct {
-	Files         []*multipart.FileHeader `form:"files" binding:"omitempty"`
+	BindFiles     []*multipart.FileHeader `form:"files" binding:"omitempty"`
 	DocManagement *DocumentManagement
 }

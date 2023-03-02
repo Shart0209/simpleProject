@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"github.com/jackc/pgx/v5/pgconn"
 	pgStore "simpleProject/pkg/db/store"
 )
 
@@ -17,13 +18,7 @@ func NewRepository(ex pgStore.Executor, s pgStore.Store) pgStore.Repository {
 	}
 }
 
-func (r *repository) GetAll() error {
-	//TODO implement me
-	panic("implement me")
-
-}
-
-func (r *repository) GetByName(obj interface{}, query string, args ...interface{}) error {
+func (r *repository) Get(obj interface{}, query string, flag bool, args ...interface{}) error {
 	ctx := r.store.GetCtx()
 	conn, err := r.store.GetExecutor()
 	if err != nil {
@@ -36,28 +31,32 @@ func (r *repository) GetByName(obj interface{}, query string, args ...interface{
 	}
 	defer rows.Close()
 
-	for rows.Next() {
-		if err = rows.Scan(&obj.contract_id, &description); err != nil {
-
+	if flag {
+		if err = scanMany(rows, obj); err != nil {
+			return fmt.Errorf("getAll: scanAll failed: %w", err)
+		}
+	} else {
+		if err = scanOne(rows, obj); err != nil {
+			return fmt.Errorf("getOne: scanOne failed: %w", err)
 		}
 	}
-
-	fmt.Println(rows)
 
 	return nil
 }
 
-func (r *repository) Create() error {
-	//TODO implement me
-	panic("implement me")
-}
+func (r *repository) Exec(query string, args ...interface{}) (pgconn.CommandTag, error) {
+	ctx := r.store.GetCtx()
 
-func (r *repository) Update(id int64) error {
-	//TODO implement me
-	panic("implement me")
-}
+	var res pgconn.CommandTag
+	ex, err := r.store.GetExecutor()
+	if err != nil {
+		return res, fmt.Errorf("get executor failed: %w", err)
+	}
 
-func (r *repository) Delete(id int64) error {
-	//TODO implement me
-	panic("implement me")
+	res, err = ex.Exec(ctx, query, args...)
+	if err != nil {
+		return res, fmt.Errorf("exec failed: %w", err)
+	}
+
+	return res, nil
 }

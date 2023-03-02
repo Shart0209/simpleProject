@@ -55,11 +55,11 @@ CREATE TABLE contracts
 CREATE TABLE files
 (
     file_id     integer GENERATED ALWAYS AS IDENTITY,
-    file_name   varchar(40)  NOT NULL,
+    file_name   varchar(40),
     file_size   float,
     file_path   varchar(255) NOT NULL,
     contract_id integer,
 
     CONSTRAINT pk_file_id PRIMARY KEY (file_id),
-    CONSTRAINT fk_files_contracts FOREIGN KEY (contract_id) REFERENCES contracts
+    CONSTRAINT fk_files_contracts FOREIGN KEY (contract_id) REFERENCES contracts ON DELETE CASCADE
 );
