@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgconn"
 	pgStore "simpleProject/pkg/db/store"
 )
@@ -19,10 +20,11 @@ func NewRepository(ex pgStore.Executor, s pgStore.Store) pgStore.Repository {
 }
 
 func (r *repository) Get(obj interface{}, query string, flag bool, args ...interface{}) error {
+
 	ctx := r.store.GetCtx()
 	conn, err := r.store.GetExecutor()
 	if err != nil {
-		return err
+		return fmt.Errorf("get executor failed: %w", err)
 	}
 
 	rows, err := conn.Query(ctx, query, args...)
@@ -32,12 +34,12 @@ func (r *repository) Get(obj interface{}, query string, flag bool, args ...inter
 	defer rows.Close()
 
 	if flag {
-		if err = scanMany(rows, obj); err != nil {
-			return fmt.Errorf("getAll: scanAll failed: %w", err)
+		if err = pgxscan.ScanAll(obj, rows); err != nil {
+			return fmt.Errorf("scanAll failed: %w", err)
 		}
 	} else {
-		if err = scanOne(rows, obj); err != nil {
-			return fmt.Errorf("getOne: scanOne failed: %w", err)
+		if err = pgxscan.ScanRow(obj, rows); err != nil {
+			return fmt.Errorf("scanRow failed: %w", err)
 		}
 	}
 
@@ -60,3 +62,13 @@ func (r *repository) Exec(query string, args ...interface{}) (pgconn.CommandTag,
 
 	return res, nil
 }
+
+//func (r *repository) InsertOne() error {
+//	ctx := r.store.GetCtx()
+//	conn, err := r.store.GetExecutor()
+//	if err != nil {
+//		return fmt.Errorf("get executor failed: %w", err)
+//	}
+//
+//	return nil
+//}

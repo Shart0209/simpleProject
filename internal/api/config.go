@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog/log"
 	"time"
@@ -26,6 +27,13 @@ type StorageConfig struct {
 }
 
 type AuthorizationConfig struct {
+}
+
+func init() {
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
 }
 
 func NewConfig() (*Config, error) {

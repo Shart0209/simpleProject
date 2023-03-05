@@ -10,47 +10,121 @@ import (
 	"path/filepath"
 	"simpleProject/pkg/model"
 	"strconv"
+	"strings"
+	"time"
 )
 
-func (s *service) GetAll() (*[]model.DocumentManagement, error) {
-	repo := s.store.repo
+//func (s *service) GetAll() (*[]model.DocumentManagement, error) {
+//	start := time.Now()
+//
+//	repo := s.store.repo
+//	data := &[]model.DocumentManagement{}
+//
+//	query := `SELECT
+//	contract_id, title, contr_number,
+//	contr_date, price, start_date, end_date,
+//	description, created_at, company_name, company_city,
+//	category_name
+//	FROM contracts
+//	JOIN distributors USING (distributor_id)
+//	JOIN categories USING (category_id)
+//	JOIN authors USING (author_id)`
+//
+//	// TODO flag:
+//	//	- true: get all
+//	// 	- false: get by ID
+//	err := repo.Get(data, query, true)
+//	if err != nil {
+//		s.logger.Error().Err(err).Msg("errors while executing query repo")
+//		return nil, err
+//	}
+//
+//	query = `SELECT file_name, file_size FROM files WHERE contract_id=$1`
+//
+//	tmp := make([]model.DocumentManagement, 0, len(*data))
+//
+//	for _, item := range *data {
+//		files := &[]model.File{}
+//
+//		err = repo.Get(files, query, true, item.Id)
+//		if err != nil {
+//			s.logger.Error().Err(err).Msg("errors while executing query repo files")
+//			return nil, err
+//		}
+//		item.Files = append(item.Files, *files...)
+//		tmp = append(tmp, item)
+//	}
+//
+//	duration := time.Since(start)
+//	fmt.Println(duration) //16.018397ms	-> 825.186µs
+//
+//	return &tmp, nil
+//}
 
+func (s *service) GetAll() (*[]model.DocumentManagement, error) {
+	start := time.Now()
+
+	repo := s.store.repo
 	data := &[]model.DocumentManagement{}
 
-	query := `SELECT
-	contract_id, title, contr_number,
-	contr_date, price, start_date, end_date,
-	description, created_at, company_name, company_city,
-	category_name
-	FROM contracts
-	JOIN distributors USING (distributor_id)
-	JOIN categories USING (category_id)
-	JOIN authors USING (author_id)`
+	query := `SELECT c.contract_id,
+     title,
+     contr_number,
+     contr_date,
+     price,
+     start_date,
+     end_date,
+     description,
+     created_at,
+     company_name,
+     company_city,
+     category_name,
+     array_agg(file_id || ' ' || file_name || ' ' || file_size) arr_file
+FROM contracts c
+       LEFT JOIN (SELECT contract_id, file_id, file_name, file_size
+                  FROM files
+                  GROUP BY file_id, file_name, file_size) t USING (contract_id)
+       JOIN distributors USING (distributor_id)
+       JOIN categories USING (category_id)
+       JOIN authors USING (author_id)
+GROUP BY title, contr_number, contr_date, price, start_date, end_date, description, created_at, company_name,
+       company_city, category_name, c.contract_id
+ORDER BY c.contract_id DESC;`
 
 	// TODO flag:
-	//	- true: get all
-	// 	- false: get by ID
+	//	- true: get ScanAll
+	// 	- false: get ScanRow
 	err := repo.Get(data, query, true)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("errors while executing query repo")
+		s.logger.Error().Err(err).Send()
 		return nil, err
 	}
-
-	query = `SELECT file_name, file_size FROM files WHERE contract_id=$1`
 
 	tmp := make([]model.DocumentManagement, 0, len(*data))
 
 	for _, item := range *data {
-		files := &[]model.File{}
+		if item.Files[0] != nil {
+			file := make([]model.File, 0, len(item.Files))
+			for _, s := range item.Files {
+				s := fmt.Sprintf("%v", s)
+				st := strings.Split(s, " ")
 
-		err = repo.Get(files, query, true, item.Id)
-		if err != nil {
-			s.logger.Error().Err(err).Msg("errors while executing query repo files")
-			return nil, err
+				var tmp = model.File{}
+				tmp.Id, _ = strconv.Atoi(st[0])
+				tmp.Name = st[1]
+				tmp.Size, _ = strconv.ParseFloat(st[2], 64)
+
+				file = append(file, tmp)
+			}
+			item.Files = nil
+			item.Files = append(item.Files, file)
 		}
-		item.Files = append(item.Files, *files...)
+
 		tmp = append(tmp, item)
+
 	}
+	duration := time.Since(start)
+	fmt.Println(duration) //15.872689ms -> 626.186µs
 
 	return &tmp, nil
 }
@@ -58,37 +132,61 @@ func (s *service) GetAll() (*[]model.DocumentManagement, error) {
 func (s *service) GetByID(id int) (*model.DocumentManagement, error) {
 
 	repo := s.store.repo
+	data := &[]model.DocumentManagement{}
 
-	data := &model.DocumentManagement{}
+	query := `SELECT c.contract_id,
+      title,
+      contr_number,
+      contr_date,
+      price,
+      start_date,
+      end_date,
+      description,
+      created_at,
+      company_name,
+      company_city,
+      category_name,
+      array_agg(file_id || ' ' || file_name || ' ' || file_size) arr_file
+FROM contracts c
+        LEFT JOIN (SELECT contract_id, file_id, file_name, file_size
+                   FROM files
+                   GROUP BY file_id, file_name, file_size) t USING (contract_id)
+        JOIN distributors USING (distributor_id)
+        JOIN categories USING (category_id)
+        JOIN authors USING (author_id)
+WHERE c.contract_id = $1
+GROUP BY title, contr_number, contr_date, price, start_date, end_date, description, created_at, company_name,
+        company_city, category_name, c.contract_id
+ORDER BY c.contract_id DESC;`
 
-	query := `SELECT
-	contract_id, title, contr_number,
-	contr_date, price, start_date, end_date,
-	description, created_at, company_name, company_city,
-	category_name
-	FROM contracts
-	JOIN distributors USING (distributor_id)
-	JOIN categories USING (category_id)
-	JOIN authors USING (author_id)
-	WHERE contract_id=$1`
-
-	err := repo.Get(data, query, false, id)
+	err := repo.Get(data, query, true, id)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("errors while executing query get ID")
 		return nil, err
 	}
 
-	files := &[]model.File{}
-	query = `SELECT file_name, file_size FROM files WHERE contract_id=$1`
-	err = repo.Get(files, query, true, data.Id)
-	if err != nil {
-		s.logger.Error().Err(err).Msg("errors while executing query get files ID")
-		return nil, err
+	for i := range *data {
+		fmt.Println(i)
 	}
 
-	data.Files = append(data.Files, *files...)
+	//if data.Files[0] != nil {
+	//	file := make([]model.File, 0, len(data.Files))
+	//	for _, s := range data.Files {
+	//		s := fmt.Sprintf("%v", s)
+	//		st := strings.Split(s, " ")
+	//
+	//		var tmp = model.File{}
+	//		tmp.Id, _ = strconv.Atoi(st[0])
+	//		tmp.Name = st[1]
+	//		tmp.Size, _ = strconv.ParseFloat(st[2], 64)
+	//
+	//		file = append(file, tmp)
+	//	}
+	//	data.Files = nil
+	//	data.Files = append(data.Files, file)
+	//}
 
-	return data, nil
+	return nil, nil
 }
 
 func (s *service) Create(bindForm *model.BindForm) error {

@@ -50,7 +50,10 @@ VALUES (DEFAULT,
         1,
         '2022-12-28 13:45:00');
 
-INSERT INTO files (file_size, file_path, contract_id)
-VALUES (123.2, '.\upload', 1),
-       (133.2, '.\upload', 2),
-       (3.2, '.\upload', 2);
+INSERT INTO files (file_name, file_size, file_path, contract_id)
+VALUES ("528f3652-3ed5-4bfb-8f28-4992ed24e081", 123000.2, '.\upload', 1),
+       ("8653ed1e-897b-4f82-9ad0-b21369621ae2-1", 33300.2, '.\upload', 2),
+       ("8653ed1e-897b-4f82-9ad0-b21369621ae2-2", 4500.2, '.\upload', 2),
+       ("73579bc7-1fae-48ea-a1f9-6baa5dafd430", 14523, '.\upload', 1),
+       ("94e02523-a4ec-4ceb-85c3-9899fd1860e5-1", 133.20, '.\upload', 2),
+       ("94e02523-a4ec-4ceb-85c3-9899fd1860e5-2", 3.20, '.\upload', 2);

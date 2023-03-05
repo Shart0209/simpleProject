@@ -1,17 +1,19 @@
+include .env
+
 postgres:
-	docker run --name postgresDB -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=1234qwER -d postgres:15-alpine
+	docker run --name ${DOCKER_NAME} -p ${POSTGRES_PORT}:${POSTGRES_PORT} -e POSTGRES_USER=${POSTGRES_USER} -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -d postgres:15-alpine
 
 createdb:
-	docker exec -it postgresDB createdb --username=root --owner=root simpleDB
+	docker exec -it ${DOCKER_NAME} createdb --username=${POSTGRES_USER} --owner=${POSTGRES_USER} ${POSTGRES_DB_NAME}
 
 dropdb:
-	docker exec -it postgresDB dropdb simpleDB
+	docker exec -it ${DOCKER_NAME} dropdb ${POSTGRES_DB_NAME}
 
 migrateup:
-	migrate -path pkg/db/migration -database "postgresql://root:1234qwER@localhost:5432/simpleDB?sslmode=disable" -verbose up
+	migrate -path pkg/db/migration -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path pkg/db/migration -database "postgresql://root:1234qwER@localhost:5432/simpleDB?sslmode=disable" -verbose down
+	migrate -path pkg/db/migration -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?sslmode=disable" -verbose down
 
 .PHONY: postgres createdb dropdb migrateup migratedown
 
