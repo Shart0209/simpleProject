@@ -12,7 +12,7 @@ import (
 )
 
 type Service interface {
-	GetAll() (*[]model.DocumentManagement, error)
+	GetAll() ([]*model.DocumentManagement, error)
 	GetByID(int) (*model.DocumentManagement, error)
 	Create(*model.BindForm) error
 	Update(int, *model.BindForm) error

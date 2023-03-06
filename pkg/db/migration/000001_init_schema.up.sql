@@ -55,7 +55,7 @@ CREATE TABLE contracts
 CREATE TABLE files
 (
     file_id     integer GENERATED ALWAYS AS IDENTITY,
-    file_name   varchar(40),
+    file_name   varchar(100),
     file_size   integer,
     file_path   varchar(255) NOT NULL,
     contract_id integer,

@@ -6,9 +6,10 @@ import (
 )
 
 type File struct {
-	Id   int     `form:"file_id" binding:"omitempty" db:"file_id, omitempty"`
-	Name string  `form:"file_name" binding:"omitempty" db:"file_name, omitempty"`
-	Size float64 `form:"file_size" binding:"omitempty" db:"file_size, omitempty"`
+	Id   int    `form:"file_id" binding:"omitempty" db:"file_id, omitempty"`
+	Name string `form:"file_name" binding:"omitempty" db:"file_name, omitempty"`
+	Size int    `form:"file_size" binding:"omitempty" db:"file_size, omitempty"`
+	Path string `json:"-" db:"file_path, omitempty" `
 }
 
 type DocumentManagement struct {
@@ -24,7 +25,7 @@ type DocumentManagement struct {
 	Distributor string        `form:"distributor" binding:"omitempty" db:"company_name"`
 	City        string        `form:"city" binding:"omitempty" db:"company_city"`
 	CreatedAt   time.Time     `form:"created_at" binding:"omitempty" db:"created_at"`
-	Files       []interface{} `form:"files" binding:"omitempty" db:"arr_file"`
+	Files       []interface{} `db:"arr_file"`
 }
 
 type BindForm struct {

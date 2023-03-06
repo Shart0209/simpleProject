@@ -38,8 +38,8 @@ func (r *repository) Get(obj interface{}, query string, flag bool, args ...inter
 			return fmt.Errorf("scanAll failed: %w", err)
 		}
 	} else {
-		if err = pgxscan.ScanRow(obj, rows); err != nil {
-			return fmt.Errorf("scanRow failed: %w", err)
+		if err = pgxscan.ScanOne(obj, rows); err != nil {
+			return fmt.Errorf("scanOne failed: %w", err)
 		}
 	}
 
@@ -50,12 +50,12 @@ func (r *repository) Exec(query string, args ...interface{}) (pgconn.CommandTag,
 	ctx := r.store.GetCtx()
 
 	var res pgconn.CommandTag
-	ex, err := r.store.GetExecutor()
+	conn, err := r.store.GetExecutor()
 	if err != nil {
 		return res, fmt.Errorf("get executor failed: %w", err)
 	}
 
-	res, err = ex.Exec(ctx, query, args...)
+	res, err = conn.Exec(ctx, query, args...)
 	if err != nil {
 		return res, fmt.Errorf("exec failed: %w", err)
 	}
@@ -63,12 +63,24 @@ func (r *repository) Exec(query string, args ...interface{}) (pgconn.CommandTag,
 	return res, nil
 }
 
-//func (r *repository) InsertOne() error {
-//	ctx := r.store.GetCtx()
-//	conn, err := r.store.GetExecutor()
-//	if err != nil {
-//		return fmt.Errorf("get executor failed: %w", err)
-//	}
-//
-//	return nil
-//}
+func (r *repository) InsertOne(returnValue interface{}, query string, args ...interface{}) error {
+
+	ctx := r.store.GetCtx()
+	conn, err := r.store.GetExecutor()
+	if err != nil {
+		return fmt.Errorf("get executor failed: %w", err)
+	}
+
+	if returnValue != nil {
+		row := conn.QueryRow(ctx, query, args...)
+		if err := row.Scan(returnValue); err != nil {
+			return fmt.Errorf("insertOne: QueryRow failed: %w", err)
+		}
+	} else {
+		if _, err := conn.Exec(ctx, query, args...); err != nil {
+			return fmt.Errorf("insertOne: Exec failed: %w", err)
+		}
+	}
+
+	return nil
+}
