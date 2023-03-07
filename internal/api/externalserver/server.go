@@ -13,10 +13,10 @@ import (
 
 type Service interface {
 	GetAll() ([]*model.DocumentManagement, error)
-	GetByID(int) (*model.DocumentManagement, error)
+	GetByID(uint64) (*model.DocumentManagement, error)
 	Create(*model.BindForm) error
 	Update(int, *model.BindForm) error
-	Delete(int) (pgconn.CommandTag, error)
+	Delete(uint64) (pgconn.CommandTag, error)
 }
 
 type Server interface {

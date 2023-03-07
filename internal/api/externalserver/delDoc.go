@@ -19,7 +19,7 @@ func (t *delTransport) handler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request errors"})
 	}
 
-	idx, err := strconv.Atoi(id)
+	idx, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
 		t.log.Error().Err(err).Msg("bad index")
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request errors"})

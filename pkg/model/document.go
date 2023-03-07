@@ -13,7 +13,7 @@ type File struct {
 }
 
 type DocumentManagement struct {
-	Id          uint          `form:"id" binding:"omitempty" db:"contract_id"`
+	Id          int           `form:"id" binding:"omitempty" db:"contract_id"`
 	Title       string        `form:"title" binding:"required" db:"title"`
 	Number      string        `form:"number" binding:"required" db:"contr_number"`
 	Date        time.Time     `form:"date" binding:"required" time_format:"2006-01-02" db:"contr_date"`

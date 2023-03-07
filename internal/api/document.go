@@ -84,7 +84,7 @@ func (s *service) GetAll() ([]*model.DocumentManagement, error) {
 	return data, nil
 }
 
-func (s *service) GetByID(id int) (*model.DocumentManagement, error) {
+func (s *service) GetByID(id uint64) (*model.DocumentManagement, error) {
 
 	start := time.Now()
 
@@ -112,8 +112,10 @@ func (s *service) GetByID(id int) (*model.DocumentManagement, error) {
       JOIN categories USING (category_id)
       LEFT JOIN authors USING (author_id)
 	WHERE c.contract_id=$1
-	GROUP BY c.contract_id, title, contr_number, contr_date, price, start_date, end_date, description, created_at, company_name,
-      company_city, category_name
+	GROUP BY c.contract_id, title, contr_number, 
+	         contr_date, price, start_date, end_date, 
+	         description, created_at, company_name, 
+	         company_city, category_name
 	ORDER BY c.contract_id DESC;`
 
 	// TODO flag:
@@ -122,7 +124,7 @@ func (s *service) GetByID(id int) (*model.DocumentManagement, error) {
 	err := repo.Get(&data, query, false, id)
 	if err != nil {
 		s.logger.Error().Err(err).Send()
-		return nil, err
+		return nil, fmt.Errorf("ID not found id=%v", id)
 	}
 
 	if data.Files[0] != nil {
@@ -212,34 +214,59 @@ RETURNING contract_id`
 
 func (s *service) Update(id int, bindForm *model.BindForm) error {
 
-	//if _, ok := db.DataBaseTest[id]; !ok {
-	//	return fmt.Errorf("not found")
-	//}
-	//
-	//if files := bindForm.Files; len(files) != 0 {
-	//	arrNameFile, err := s.GetNameAndSaveFile(files)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	//TODO падает при поллучении одного поля files
-	//	bindForm.FileName = *arrNameFile
-	//}
-	//db.DataBaseTest[id] = *bindForm.DocumentManagement
-
 	return nil
 }
 
-func (s *service) Delete(id int) (pgconn.CommandTag, error) {
+func (s *service) Delete(id uint64) (pgconn.CommandTag, error) {
+	start := time.Now()
 
 	repo := s.store.repo
 
-	query := `DELETE FROM contracts	WHERE contract_id = $1`
+	// get file_path by ID
+	var data []*model.DocumentManagement
+	query := `SELECT contract_id, array_agg(file_path) arr_file FROM files f WHERE contract_id=$1 GROUP BY contract_id`
+	err := repo.Get(&data, query, true, int(id))
+	if err != nil {
+		s.logger.Error().Err(err).Send()
+		return pgconn.CommandTag{}, err
+	}
 
-	tag, err := repo.Exec(query, id)
+	if data == nil {
+		return pgconn.CommandTag{}, fmt.Errorf("ID not found id=%v", id)
+	}
 
+	//delete records by id
+	query = `DELETE FROM contracts WHERE contract_id=$1;`
+	tag, err := repo.Exec(query, int(id))
 	if err != nil {
 		return pgconn.CommandTag{}, fmt.Errorf("failed to delete by id=%d", id)
 	}
+
+	//delete files to ./upload
+	dt := data[0]
+	if dt.Files[0] != nil {
+		for _, items := range dt.Files {
+			line := fmt.Sprintf("%v", items)
+			lines := strings.Split(line, ",")
+			for _, item := range lines {
+				//checking that the file does not exist
+				if _, err := os.Stat(item); err != nil {
+					if os.IsNotExist(err) {
+						fmt.Println("file does not exist")
+						continue
+					}
+				}
+				err := os.Remove(item)
+				if err != nil {
+					s.logger.Error().Err(err).Send()
+					return pgconn.CommandTag{}, err
+				}
+			}
+		}
+	}
+
+	duration := time.Since(start)
+	fmt.Println(duration) //15.872689ms -> 626.186µs
 
 	return tag, nil
 }

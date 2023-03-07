@@ -19,7 +19,7 @@ func NewRepository(ex pgStore.Executor, s pgStore.Store) pgStore.Repository {
 	}
 }
 
-func (r *repository) Get(obj interface{}, query string, flag bool, args ...interface{}) error {
+func (r *repository) Get(obj interface{}, query string, flagScanAllOrOneRow bool, args ...interface{}) error {
 
 	ctx := r.store.GetCtx()
 	conn, err := r.store.GetExecutor()
@@ -33,7 +33,7 @@ func (r *repository) Get(obj interface{}, query string, flag bool, args ...inter
 	}
 	defer rows.Close()
 
-	if flag {
+	if flagScanAllOrOneRow {
 		if err = pgxscan.ScanAll(obj, rows); err != nil {
 			return fmt.Errorf("scanAll failed: %w", err)
 		}

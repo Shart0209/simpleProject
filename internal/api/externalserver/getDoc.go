@@ -16,7 +16,7 @@ func (t *getTransport) handler(ctx *gin.Context) {
 
 	// get by id document /documents/:id
 	if id := ctx.Param("id"); id != "" {
-		idx, err := strconv.Atoi(id)
+		idx, err := strconv.ParseUint(id, 10, 64)
 		if err != nil {
 			t.log.Error().Err(err).Msg("bad index")
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request errors"})

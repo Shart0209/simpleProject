@@ -28,5 +28,11 @@ func (t *addTransport) handler(ctx *gin.Context) {
 		return
 	}
 
+	// TODO не работает redirect - разобраться почему!
+	//location := url.URL{Path: "/documents/"}
+	//fmt.Println(location)
+	//ctx.Redirect(http.StatusMovedPermanently, location.RequestURI())
+
 	ctx.Status(http.StatusOK)
+	return
 }
