@@ -6,6 +6,7 @@ import (
 	"simpleProject/internal/api/externalserver"
 	PGStore "simpleProject/pkg/db/store"
 	"simpleProject/pkg/db/store/postgres"
+
 	libHTTP "simpleProject/pkg/http"
 	"simpleProject/pkg/sig"
 
@@ -67,13 +68,14 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 	pgStorage, err := postgres.NewStore(
 		context.Background(),
 		&postgres.Config{
-			PostgresHost:           s.cfg.Postgres.Host,
-			PostgresUsername:       s.cfg.Postgres.User,
-			PostgresPassword:       s.cfg.Postgres.Pswd,
-			PostgresDBName:         s.cfg.Postgres.DbName,
-			PostgresPort:           s.cfg.Postgres.Port,
-			PostgresConnectTimeout: s.cfg.Postgres.ConnectTimeout,
-			PostgresMaxConns:       s.cfg.Postgres.MaxConns,
+			PostgresHost:             s.cfg.Postgres.Host,
+			PostgresUsername:         s.cfg.Postgres.User,
+			PostgresPassword:         s.cfg.Postgres.Pswd,
+			PostgresDBName:           s.cfg.Postgres.DbName,
+			PostgresPort:             s.cfg.Postgres.Port,
+			PostgresConnectTimeout:   s.cfg.Postgres.ConnectTimeout,
+			PostgresOperationTimeout: s.cfg.Postgres.OperationTimeout,
+			PostgresMaxConns:         s.cfg.Postgres.MaxConns,
 		},
 		s.baseLogger.With().Str("component", "postgres db").Logger())
 	if err != nil {
@@ -81,11 +83,7 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 	}
 
 	s.store.pgStore = pgStorage
-	ex, err := pgStorage.GetExecutor()
-	if err != nil {
-		return err
-	}
-	s.store.repo = pgStorage.GetRepository(ex)
+	s.store.repo = pgStorage.GetRepository()
 
 	return nil
 }

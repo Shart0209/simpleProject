@@ -8,9 +8,9 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"simpleProject/pkg/constants"
 	"simpleProject/pkg/model"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -22,61 +22,48 @@ type files struct {
 func (s *service) GetAll() ([]*model.DocumentManagement, error) {
 	start := time.Now()
 
-	repo := s.store.repo
 	var data []*model.DocumentManagement
 
-	query := `SELECT c.contract_id,
-    title,
-    contr_number,
-    contr_date,
-    price,
-    start_date,
-    end_date,
-    description,
-    created_at,
-    company_name,
-    company_city,
-    category_name,
+	query := fmt.Sprintf(`SELECT %s, 
     array_agg(file_id || ' ' || file_name || ' ' || file_size) arr_file
-	FROM contracts c
+	FROM contracts
       LEFT JOIN (SELECT contract_id, file_id, file_name, file_size
                  FROM files
                  GROUP BY file_id, file_name, file_size) t USING (contract_id)
       JOIN distributors USING (distributor_id)
       JOIN categories USING (category_id)
       LEFT JOIN authors USING (author_id)
-	GROUP BY c.contract_id, title, contr_number, contr_date, price, start_date, end_date, description, created_at, company_name,
-      company_city, category_name
-	ORDER BY c.contract_id DESC;`
+	GROUP BY %s
+	ORDER BY contract_id DESC;`, constants.Repo.GetColumns, constants.Repo.GetColumns)
 
 	// TODO flag:
 	//	- true: get ScanAll
 	// 	- false: get ScanOne
-	err := repo.Get(&data, query, true)
+	err := s.store.repo.Get(&data, query, true)
 	if err != nil {
 		s.logger.Error().Err(err).Send()
 		return nil, err
 	}
 
-	for _, item := range data {
-		if item.Files[0] != nil {
-			var tmpFiles []interface{}
-			tmpFiles = append(tmpFiles, item.Files...)
-			item.Files = nil
-
-			for _, s := range tmpFiles {
-				s := fmt.Sprintf("%v", s)
-				st := strings.Split(s, " ")
-
-				tmp := model.File{}
-				tmp.Id, _ = strconv.Atoi(st[0])
-				tmp.Name = st[1]
-				tmp.Size, _ = strconv.Atoi(st[2])
-
-				item.Files = append(item.Files, tmp)
-			}
-		}
-	}
+	//for _, item := range data {
+	//	if item.Files[0] != nil {
+	//		var tmpFiles []interface{}
+	//		tmpFiles = append(tmpFiles, item.Files...)
+	//		item.Files = nil
+	//
+	//		for _, s := range tmpFiles {
+	//			s := fmt.Sprintf("%v", s)
+	//			st := strings.Split(s, " ")
+	//
+	//			tmp := model.File{}
+	//			//tmp.Id, _ = strconv.Atoi(st[0])
+	//			tmp.Name = st[1]
+	//			tmp.Size, _ = strconv.Atoi(st[2])
+	//
+	//			item.Files = append(item.Files, tmp)
+	//		}
+	//	}
+	//}
 
 	duration := time.Since(start)
 	fmt.Println(duration) //15.872689ms -> 626.186µs
@@ -88,74 +75,72 @@ func (s *service) GetByID(id uint64) (*model.DocumentManagement, error) {
 
 	start := time.Now()
 
-	repo := s.store.repo
 	var data model.DocumentManagement
 
-	query := `SELECT c.contract_id,
-    title,
-    contr_number,
-    contr_date,
-    price,
-    start_date,
-    end_date,
-    description,
-    created_at,
-    company_name,
-    company_city,
-    category_name,
-    array_agg(file_id || ' ' || file_name || ' ' || file_size) arr_file
-	FROM contracts c
-      LEFT JOIN (SELECT contract_id, file_id, file_name, file_size
-                 FROM files
-                 GROUP BY file_id, file_name, file_size) t USING (contract_id)
-      JOIN distributors USING (distributor_id)
-      JOIN categories USING (category_id)
-      LEFT JOIN authors USING (author_id)
-	WHERE c.contract_id=$1
-	GROUP BY c.contract_id, title, contr_number, 
-	         contr_date, price, start_date, end_date, 
-	         description, created_at, company_name, 
-	         company_city, category_name
-	ORDER BY c.contract_id DESC;`
+	//query := fmt.Sprintf(`SELECT %s,
+	//files as map,
+	//array_agg(file_id || ' ' || file_name || ' ' || file_size) arr_file
+	//FROM contracts
+	//LEFT JOIN (SELECT contract_id, file_id, file_name, file_size
+	//          FROM files
+	//          GROUP BY file_id, file_name, file_size) t USING (contract_id)
+	//JOIN distributors USING (distributor_id)
+	//JOIN categories USING (category_id)
+	//LEFT JOIN authors USING (author_id)
+	//WHERE c.contract_id=$1
+	//GROUP BY %s
+	//ORDER BY c.contract_id DESC;`, constants.Repo.GetColumns, constants.Repo.GetColumns)
+
+	query := `SELECT contract_id,title,contr_number,contr_date,price,start_date,
+end_date,description,created_at,company_name,company_city,category_name,
+files AS map
+	FROM contracts
+	JOIN distributors USING (distributor_id)
+	JOIN categories USING (category_id)
+	LEFT JOIN authors USING (author_id)
+	WHERE contract_id=$1
+	ORDER BY contract_id DESC;`
+
+	//var data model.JSON
+	//query := `select files AS map from contracts where contract_id=$1`
 
 	// TODO flag:
 	//	- true: get ScanAll
 	// 	- false: get ScanOne
-	err := repo.Get(&data, query, false, id)
+	err := s.store.repo.Get(&data, query, false, int(id))
 	if err != nil {
 		s.logger.Error().Err(err).Send()
 		return nil, fmt.Errorf("ID not found id=%v", id)
 	}
 
-	if data.Files[0] != nil {
-		var tmpFiles []interface{}
-		tmpFiles = append(tmpFiles, data.Files...)
-		data.Files = nil
-
-		for _, s := range tmpFiles {
-			s := fmt.Sprintf("%v", s)
-			st := strings.Split(s, " ")
-
-			tmp := model.File{}
-			tmp.Id, _ = strconv.Atoi(st[0])
-			tmp.Name = st[1]
-			tmp.Size, _ = strconv.Atoi(st[2])
-
-			data.Files = append(data.Files, tmp)
-		}
-
-	}
+	//if data.Files[0] != nil {
+	//	var tmpFiles []interface{}
+	//	tmpFiles = append(tmpFiles, data.Files...)
+	//	data.Files = nil
+	//
+	//	for _, s := range tmpFiles {
+	//		s := fmt.Sprintf("%v", s)
+	//		st := strings.Split(s, " ")
+	//
+	//		tmp := model.File{}
+	//		tmp.Id, _ = strconv.Atoi(st[0])
+	//		tmp.Name = st[1]
+	//		tmp.Size, _ = strconv.Atoi(st[2])
+	//
+	//		data.Files = append(data.Files, tmp)
+	//	}
+	//
+	//}
 
 	duration := time.Since(start)
 	fmt.Println(duration) //
 
-	return &data, nil
+	//return &data, nil
+	return nil, nil
 }
 
 func (s *service) Create(bindForm *model.BindForm) error {
 	start := time.Now()
-
-	repo := s.store.repo
 
 	query := `
 INSERT INTO contracts	(title, contr_number, contr_date, category_id, price, start_date, end_date,
@@ -164,7 +149,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING contract_id`
 
 	data := model.DocumentManagement{}
-	err := repo.InsertOne(&data.Id, query,
+	err := s.store.repo.InsertOne(&data.Id, query,
 		bindForm.DocManagement.Title,
 		bindForm.DocManagement.Number,
 		bindForm.DocManagement.Date,
@@ -190,7 +175,7 @@ RETURNING contract_id`
 		query = `INSERT INTO files (file_name, file_size, file_path, contract_id) VALUES ($1, $2, $3, $4)`
 
 		for _, item := range arrFiles {
-			err := repo.InsertOne(nil, query,
+			err := s.store.repo.InsertOne(nil, query,
 				item.mf.Name,
 				item.mf.Size,
 				item.mf.Path,
@@ -220,12 +205,10 @@ func (s *service) Update(id int, bindForm *model.BindForm) error {
 func (s *service) Delete(id uint64) (pgconn.CommandTag, error) {
 	start := time.Now()
 
-	repo := s.store.repo
-
 	// get file_path by ID
 	var data []*model.DocumentManagement
 	query := `SELECT contract_id, array_agg(file_path) arr_file FROM files f WHERE contract_id=$1 GROUP BY contract_id`
-	err := repo.Get(&data, query, true, int(id))
+	err := s.store.repo.Get(&data, query, true, int(id))
 	if err != nil {
 		s.logger.Error().Err(err).Send()
 		return pgconn.CommandTag{}, err
@@ -237,33 +220,33 @@ func (s *service) Delete(id uint64) (pgconn.CommandTag, error) {
 
 	//delete records by id
 	query = `DELETE FROM contracts WHERE contract_id=$1;`
-	tag, err := repo.Exec(query, int(id))
+	tag, err := s.store.repo.Exec(query, int(id))
 	if err != nil {
 		return pgconn.CommandTag{}, fmt.Errorf("failed to delete by id=%d", id)
 	}
 
 	//delete files to ./upload
-	dt := data[0]
-	if dt.Files[0] != nil {
-		for _, items := range dt.Files {
-			line := fmt.Sprintf("%v", items)
-			lines := strings.Split(line, ",")
-			for _, item := range lines {
-				//checking that the file does not exist
-				if _, err := os.Stat(item); err != nil {
-					if os.IsNotExist(err) {
-						fmt.Println("file does not exist")
-						continue
-					}
-				}
-				err := os.Remove(item)
-				if err != nil {
-					s.logger.Error().Err(err).Send()
-					return pgconn.CommandTag{}, err
-				}
-			}
-		}
-	}
+	//dt := data[0]
+	//if dt.Files[0] != nil {
+	//	for _, items := range dt.Files {
+	//		line := fmt.Sprintf("%v", items)
+	//		lines := strings.Split(line, ",")
+	//		for _, item := range lines {
+	//			//checking that the file does not exist
+	//			if _, err := os.Stat(item); err != nil {
+	//				if os.IsNotExist(err) {
+	//					fmt.Println("file does not exist")
+	//					continue
+	//				}
+	//			}
+	//			err := os.Remove(item)
+	//			if err != nil {
+	//				s.logger.Error().Err(err).Send()
+	//				return pgconn.CommandTag{}, err
+	//			}
+	//		}
+	//	}
+	//}
 
 	duration := time.Since(start)
 	fmt.Println(duration) //15.872689ms -> 626.186µs

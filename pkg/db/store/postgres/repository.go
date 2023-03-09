@@ -9,19 +9,20 @@ import (
 
 type repository struct {
 	executor pgStore.Executor
-	store    pgStore.Store
+	store    pgStore.BaseStore
 }
 
-func NewRepository(ex pgStore.Executor, s pgStore.Store) pgStore.Repository {
+func NewBaseRepository(ex pgStore.Executor, s pgStore.BaseStore) pgStore.Repository {
 	return &repository{
 		executor: ex,
 		store:    s,
 	}
 }
 
-func (r *repository) Get(obj interface{}, query string, flagScanAllOrOneRow bool, args ...interface{}) error {
+func (r *repository) Get(obj interface{}, query string, flagScanAllOrOne bool, args ...interface{}) error {
+	ctx, cancel := r.store.GetCtxWithTimeout()
+	defer cancel()
 
-	ctx := r.store.GetCtx()
 	conn, err := r.store.GetExecutor()
 	if err != nil {
 		return fmt.Errorf("get executor failed: %w", err)
@@ -33,7 +34,7 @@ func (r *repository) Get(obj interface{}, query string, flagScanAllOrOneRow bool
 	}
 	defer rows.Close()
 
-	if flagScanAllOrOneRow {
+	if flagScanAllOrOne {
 		if err = pgxscan.ScanAll(obj, rows); err != nil {
 			return fmt.Errorf("scanAll failed: %w", err)
 		}
@@ -47,7 +48,8 @@ func (r *repository) Get(obj interface{}, query string, flagScanAllOrOneRow bool
 }
 
 func (r *repository) Exec(query string, args ...interface{}) (pgconn.CommandTag, error) {
-	ctx := r.store.GetCtx()
+	ctx, cancel := r.store.GetCtxWithTimeout()
+	defer cancel()
 
 	var res pgconn.CommandTag
 	conn, err := r.store.GetExecutor()
@@ -64,8 +66,9 @@ func (r *repository) Exec(query string, args ...interface{}) (pgconn.CommandTag,
 }
 
 func (r *repository) InsertOne(returnValue interface{}, query string, args ...interface{}) error {
+	ctx, cancel := r.store.GetCtxWithTimeout()
+	defer cancel()
 
-	ctx := r.store.GetCtx()
 	conn, err := r.store.GetExecutor()
 	if err != nil {
 		return fmt.Errorf("get executor failed: %w", err)

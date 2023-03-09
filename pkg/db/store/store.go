@@ -13,10 +13,21 @@ type Executor interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
+type Repository interface {
+	Get(obj interface{}, query string, flagScanAllOrOne bool, args ...interface{}) error
+	Exec(query string, args ...interface{}) (pgconn.CommandTag, error)
+	InsertOne(returnValue interface{}, query string, args ...interface{}) error
+}
+
 type Store interface {
 	Stop() error
 	GetLogger() zerolog.Logger
 	GetExecutor() (Executor, error)
-	GetRepository(Executor) Repository
-	GetCtx() context.Context
+
+	GetRepository() Repository
+}
+
+type BaseStore interface {
+	GetCtxWithTimeout() (context.Context, context.CancelFunc)
+	GetExecutor() (Executor, error)
 }
