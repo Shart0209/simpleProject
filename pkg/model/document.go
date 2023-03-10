@@ -6,10 +6,14 @@ import (
 )
 
 type File struct {
-	Id   int    `form:"file_id" binding:"omitempty" db:"id, omitempty"`
-	Name string `form:"file_name" binding:"omitempty" db:"name, omitempty"`
-	Size int    `form:"file_size" binding:"omitempty" db:"size, omitempty"`
-	Path string `json:"-" db:"file_path, omitempty" `
+	Name string `json:"name"`
+	Size int    `json:"size"`
+	Path string `json:"path"`
+}
+
+type Files struct {
+	File
+	Files *multipart.FileHeader
 }
 
 type DocumentManagement struct {
@@ -26,11 +30,7 @@ type DocumentManagement struct {
 	City        string                 `form:"city" binding:"omitempty" db:"company_city"`
 	CreatedAt   time.Time              `form:"created_at" binding:"omitempty" db:"created_at"`
 	UpdateAt    time.Time              `form:"update_at" binding:"omitempty" db:"update_at"`
-	Map         map[string]interface{} `json:"map" db:"map"`
-}
-
-type JSON struct {
-	Map map[string]interface{} `json:"map" db:"map"`
+	Files       map[string]interface{} `json:"files" db:"files"`
 }
 
 type BindForm struct {

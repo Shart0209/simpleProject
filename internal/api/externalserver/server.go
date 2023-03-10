@@ -2,7 +2,6 @@ package externalserver
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgconn"
 	"net/http"
 	"simpleProject/pkg/model"
 
@@ -16,7 +15,7 @@ type Service interface {
 	GetByID(uint64) (*model.DocumentManagement, error)
 	Create(*model.BindForm) error
 	Update(int, *model.BindForm) error
-	Delete(uint64) (pgconn.CommandTag, error)
+	Delete(uint64) error
 }
 
 type Server interface {
