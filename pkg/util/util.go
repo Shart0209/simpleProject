@@ -23,25 +23,19 @@ func CreateFolder(path *string) error {
 	return nil
 }
 
-func DeleteFile(arr *[]string, path *string) error {
+func DeleteFile(path *string) error {
 
-	baseDir, err := filepath.Abs(*path)
-	if err != nil {
-		return fmt.Errorf("path folder to ./upload not found")
-	}
+	//checking that the file does not exist
 
-	if len(*arr) == 0 {
-		readDir, _ := os.Open(baseDir)
-		files, _ := readDir.Readdir(0)
-
-		for f := range files {
-			file := files[f]
-
-			fileName := file.Name()
-			filePath := filepath.Join(baseDir, fileName)
-
-			_ = os.Remove(filePath)
+	if _, err := os.Stat(*path); err != nil {
+		if os.IsNotExist(err) {
+			fmt.Println("file does not exist")
+			return err
 		}
+	}
+	err := os.Remove(*path)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -57,8 +51,8 @@ func ParserBindForm(bindFiles []*multipart.FileHeader, folder string, data *[]mo
 	}
 
 	for i, file := range bindFiles {
-		fName := filepath.Base(file.Filename)
-		filename := fileID + "-" + strconv.Itoa(i) + filepath.Ext(fName)
+		ext := filepath.Base(file.Filename)
+		filename := fileID + "-" + strconv.Itoa(i) + filepath.Ext(ext)
 		filePath := filepath.Join(baseDir, filename)
 
 		tmp := model.Files{

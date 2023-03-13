@@ -137,34 +137,20 @@ func (s *service) Delete(id uint64) error {
 	query := `DELETE FROM contracts WHERE contract_id=$1 RETURNING files;`
 
 	var data model.DocumentManagement
-	err := s.store.repo.InsertOne(&data, query, int(id))
+	err := s.store.repo.InsertOne(&data.AttrFiles, query, int(id))
 	if err != nil {
 		s.logger.Error().Err(err).Send()
-		return fmt.Errorf("ID not found id=%v", id)
+		return fmt.Errorf("failed %w", err)
 	}
 
-	//delete files to ./upload
-	//dt := data[0]
-	//if dt.Files[0] != nil {
-	//	for _, items := range dt.Files {
-	//		line := fmt.Sprintf("%v", items)
-	//		lines := strings.Split(line, ",")
-	//		for _, item := range lines {
-	//			//checking that the file does not exist
-	//			if _, err := os.Stat(item); err != nil {
-	//				if os.IsNotExist(err) {
-	//					fmt.Println("file does not exist")
-	//					continue
-	//				}
-	//			}
-	//			err := os.Remove(item)
-	//			if err != nil {
-	//				s.logger.Error().Err(err).Send()
-	//				return pgconn.CommandTag{}, err
-	//			}
-	//		}
-	//	}
-	//}
+	var items = data.AttrFiles["attr"].([]interface{})
+	for _, item := range items {
+		res := item.(map[string]interface{})
+		path := res["path"].(string)
+		if err := util.DeleteFile(&path); err != nil {
+			return fmt.Errorf("failed to delete file %w", err)
+		}
+	}
 
 	duration := time.Since(start)
 	fmt.Println(duration) //15.872689ms -> 626.186µs
