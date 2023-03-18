@@ -9,6 +9,8 @@ CREATE TABLE contracts
     start_date     date         NOT NULL,
     end_date       date         NOT NULL,
     distributor_id integer      NOT NULL,
+    status         boolean         NOT NULL,
+    isDeleted      boolean      DEFAULT false,
     description    varchar,
     files          jsonb,
     author_id      integer,

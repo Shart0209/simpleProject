@@ -88,7 +88,10 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		attr := make(map[string]interface{}, 1)
 		attr["attr"] = res
 
-		jsonFiles, _ = json.Marshal(attr)
+		jsonFiles, err = json.Marshal(attr)
+		if err != nil {
+			return err
+		}
 
 	}
 

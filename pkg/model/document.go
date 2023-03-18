@@ -27,7 +27,7 @@ type DocumentManagement struct {
 	EndDate     time.Time              `form:"end_date" json:"end_date" binding:"required" time_format:"2006-01-02" db:"end_date"`
 	Description string                 `form:"description" json:"description" binding:"omitempty" db:"description"`
 	Distributor string                 `form:"distributor" json:"distributor" binding:"omitempty" db:"company_name"`
-	City        string                 `form:"city" json:"city" binding:"omitempty" db:"company_city"`
+	Status      bool                   `form:"status" json:"status" binding:"omitempty" db:"status"`
 	CreatedAt   time.Time              `form:"created_at" json:"created_at" binding:"omitempty" db:"created_at"`
 	UpdateAt    time.Time              `form:"update_at" json:"update_at" binding:"omitempty" db:"update_at"`
 	AttrFiles   map[string]interface{} `json:"files" db:"files"`
