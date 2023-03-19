@@ -25,7 +25,7 @@ export function useFetch(url, requestOptions) {
     }
 
     if (requestOptions.method = 'GET') {
-      return { data, error }
+        return { data, error }
     }
     return { error }
 }
