@@ -16,8 +16,8 @@ type Files struct {
 	Files *multipart.FileHeader
 }
 
-type DocumentManagement struct {
-	Id          int                    `form:"id" json:"id" binding:"omitempty" db:"contract_id"`
+type DocsAttrs struct {
+	ID          int                    `form:"id" json:"id" binding:"omitempty" db:"contract_id"`
 	Title       string                 `form:"title" json:"title" binding:"required" db:"title"`
 	Number      string                 `form:"number" json:"number" binding:"required" db:"contr_number"`
 	Date        time.Time              `form:"date" json:"date" binding:"required" time_format:"2006-01-02" db:"contr_date"`
@@ -35,5 +35,9 @@ type DocumentManagement struct {
 
 type BindForm struct {
 	BindFiles     []*multipart.FileHeader `form:"files" binding:"omitempty"`
-	DocManagement *DocumentManagement
+	DocManagement *DocsAttrs
+}
+
+func (b *BindForm) Verify() bool {
+	return true
 }

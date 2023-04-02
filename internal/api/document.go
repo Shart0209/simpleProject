@@ -6,13 +6,14 @@ import (
 	"simpleProject/pkg/constants"
 	"simpleProject/pkg/model"
 	"simpleProject/pkg/util"
+	"strconv"
 	"time"
 )
 
-func (s *service) GetAll() ([]*model.DocumentManagement, error) {
+func (s *service) GetAll() ([]*model.DocsAttrs, error) {
 	start := time.Now()
 
-	var data []*model.DocumentManagement
+	var data []*model.DocsAttrs
 
 	query := fmt.Sprintf(`SELECT %s 
 	FROM contracts
@@ -36,11 +37,11 @@ func (s *service) GetAll() ([]*model.DocumentManagement, error) {
 	return data, nil
 }
 
-func (s *service) GetByID(id uint64) (*model.DocumentManagement, error) {
+func (s *service) GetByID(id uint64) (*model.DocsAttrs, error) {
 
 	start := time.Now()
 
-	var data model.DocumentManagement
+	var data model.DocsAttrs
 
 	query := fmt.Sprintf(`SELECT %s 
 	FROM contracts
@@ -92,22 +93,31 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		if err != nil {
 			return err
 		}
+	}
 
+	category_id, err := strconv.Atoi(bindForm.DocManagement.Category)
+	if err != nil {
+		return err
+	}
+
+	distributor_id, err := strconv.Atoi(bindForm.DocManagement.Distributor)
+	if err != nil {
+		return err
 	}
 
 	query := fmt.Sprintf("INSERT INTO contracts	(%s) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
 		constants.Repo.CreateColums)
 
-	err := s.store.repo.InsertOne(nil, query,
+	err = s.store.repo.InsertOne(nil, query,
 		bindForm.DocManagement.Title,
 		bindForm.DocManagement.Number,
 		bindForm.DocManagement.Date,
-		bindForm.DocManagement.Category,
+		category_id,
 		bindForm.DocManagement.Price,
 		bindForm.DocManagement.StartDate,
 		bindForm.DocManagement.EndDate,
 		bindForm.DocManagement.Description,
-		bindForm.DocManagement.Distributor,
+		distributor_id,
 		jsonFiles,
 	)
 	if err != nil {
@@ -139,19 +149,21 @@ func (s *service) Delete(id uint64) error {
 	//delete records by id
 	query := `DELETE FROM contracts WHERE contract_id=$1 RETURNING files;`
 
-	var data model.DocumentManagement
+	var data model.DocsAttrs
 	err := s.store.repo.InsertOne(&data.AttrFiles, query, int(id))
 	if err != nil {
 		s.logger.Error().Err(err).Send()
 		return fmt.Errorf("failed %w", err)
 	}
 
-	var items = data.AttrFiles["attr"].([]interface{})
-	for _, item := range items {
-		res := item.(map[string]interface{})
-		path := res["path"].(string)
-		if err := util.DeleteFile(&path); err != nil {
-			return fmt.Errorf("failed to delete file %w", err)
+	if data.AttrFiles != nil {
+		var items = data.AttrFiles["attr"].([]interface{})
+		for _, item := range items {
+			res := item.(map[string]interface{})
+			path := res["path"].(string)
+			if err := util.DeleteFile(&path); err != nil {
+				return fmt.Errorf("failed to delete file %w", err)
+			}
 		}
 	}
 

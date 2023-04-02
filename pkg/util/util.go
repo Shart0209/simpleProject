@@ -63,10 +63,8 @@ func ParserBindForm(bindFiles []*multipart.FileHeader, folder string, data *[]mo
 			},
 			Files: file,
 		}
-
 		*data = append(*data, tmp)
 	}
-
 	return nil
 }
 

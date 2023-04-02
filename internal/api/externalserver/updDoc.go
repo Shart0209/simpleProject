@@ -22,7 +22,9 @@ func (t *updTransport) handler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
+	if !bindForm.Verify() {
 
+	}
 	id := ctx.Param("id")
 	idx, err := strconv.Atoi(id)
 	if err != nil {

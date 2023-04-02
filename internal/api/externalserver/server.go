@@ -2,17 +2,17 @@ package externalserver
 
 import (
 	"context"
+	"github.com/gin-contrib/cors"
 	"net/http"
 	"simpleProject/pkg/model"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
 type Service interface {
-	GetAll() ([]*model.DocumentManagement, error)
-	GetByID(uint64) (*model.DocumentManagement, error)
+	GetAll() ([]*model.DocsAttrs, error)
+	GetByID(uint64) (*model.DocsAttrs, error)
 	Create(*model.BindForm) error
 	Update(int, *model.BindForm) error
 	Delete(uint64) error
@@ -67,9 +67,11 @@ func (s *server) GetServer() *http.Server {
 }
 
 func (s *server) configureRouter() {
-	s.router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"*"},
-	}))
+	//s.router.Use(cors.New(cors.Config{
+	//	AllowOrigins: []string{"*"},
+	//}))
+
+	s.router.Use(cors.Default())
 
 	//test
 	s.router.GET("/ping", func(c *gin.Context) {
@@ -98,7 +100,7 @@ func (s *server) configureRouter() {
 		log: s.logger.With().Str("transport", "delete by id document").Logger(),
 	}
 
-	doc := s.router.Group("/documents")
+	doc := s.router.Group("/docs")
 	doc.GET("/", s.middleware(get))
 	doc.GET("/:id", s.middleware(get))
 	doc.POST("/add", s.middleware(add))
