@@ -16,6 +16,7 @@ type Service interface {
 	Create(*model.BindForm) error
 	Update(int, *model.BindForm) error
 	Delete(uint64) error
+	GetSps() (*model.Sps, error)
 }
 
 type Server interface {
@@ -95,6 +96,11 @@ func (s *server) configureRouter() {
 		log: s.logger.With().Str("transport", "get all/id document").Logger(),
 	}
 
+	sps := &getCatTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "get list categories/distributors").Logger(),
+	}
+
 	del := &delTransport{
 		svc: s.svc,
 		log: s.logger.With().Str("transport", "delete by id document").Logger(),
@@ -103,6 +109,7 @@ func (s *server) configureRouter() {
 	doc := s.router.Group("/docs")
 	doc.GET("/", s.middleware(get))
 	doc.GET("/:id", s.middleware(get))
+	doc.GET("/sps", s.middleware(sps))
 	doc.POST("/add", s.middleware(add))
 	doc.PATCH("/update/:id", s.middleware(upd))
 	doc.DELETE("/delete/:id", s.middleware(del))

@@ -26,7 +26,7 @@ type DocsAttrs struct {
 	StartDate   time.Time              `form:"start_date" json:"start_date" binding:"required" time_format:"2006-01-02" db:"start_date"`
 	EndDate     time.Time              `form:"end_date" json:"end_date" binding:"required" time_format:"2006-01-02" db:"end_date"`
 	Description string                 `form:"description" json:"description" binding:"omitempty" db:"description"`
-	Distributor string                 `form:"distributor" json:"distributor" binding:"omitempty" db:"company_name"`
+	Distributor string                 `form:"distributor" json:"distributor" binding:"omitempty" db:"distributor_name"`
 	Status      bool                   `form:"status" json:"status" binding:"omitempty" db:"status"`
 	CreatedAt   time.Time              `form:"created_at" json:"created_at" binding:"omitempty" db:"created_at"`
 	UpdateAt    time.Time              `form:"update_at" json:"update_at" binding:"omitempty" db:"update_at"`
@@ -36,6 +36,11 @@ type DocsAttrs struct {
 type BindForm struct {
 	BindFiles     []*multipart.FileHeader `form:"files" binding:"omitempty"`
 	DocManagement *DocsAttrs
+}
+
+type Sps struct {
+	Category    []map[string]interface{}
+	Distributor []map[string]interface{}
 }
 
 func (b *BindForm) Verify() bool {

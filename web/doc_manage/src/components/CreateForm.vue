@@ -74,14 +74,14 @@ function onChangeFile(e) {
       <div class="col-sm-6">
         <select class="form-floating form-select" @change="onChangeCategory($event)">
           <option disabled selected>Способ заключения</option>
-          <option v-for="item in optionsSelect.categories" :key=item.id :value="item.id">{{ item.name }}
+          <option v-for="item in optionsSelect.categories" :key=item.category_id :value="item.category_id">{{ item.category_name }}
           </option>
         </select>
       </div>
       <div class="col-sm-6">
         <select class="form-floating form-select" @change="onChangeDescription($event)">
           <option disabled selected>Поставщик</option>
-          <option v-for="item in optionsSelect.distributors" :key=item.id :value="item.id">{{ item.name }}
+          <option v-for="item in optionsSelect.distributors" :key=item.distributor_id :value="item.distributor_id">{{ item.distributor_name }}
           </option>
         </select>
       </div>

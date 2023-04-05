@@ -15,12 +15,12 @@ func (s *service) GetAll() ([]*model.DocsAttrs, error) {
 
 	var data []*model.DocsAttrs
 
-	query := fmt.Sprintf(`SELECT %s 
+	query := fmt.Sprintf(`SELECT contract_id, created_at, distributor_name, category_name, files,status, %s 
 	FROM contracts
 	JOIN distributors USING (distributor_id)
 	JOIN categories USING (category_id)
 	LEFT JOIN authors USING (author_id)
-	ORDER BY contract_id DESC;`, constants.Repo.GetColumns)
+	ORDER BY contract_id DESC;`, constants.Repo.Colum)
 
 	// TODO flag:
 	//	- true: get ScanAll
@@ -43,13 +43,13 @@ func (s *service) GetByID(id uint64) (*model.DocsAttrs, error) {
 
 	var data model.DocsAttrs
 
-	query := fmt.Sprintf(`SELECT %s 
+	query := fmt.Sprintf(`SELECT contract_id, created_at,distributor_name,category_name,files,status, %s 
 	FROM contracts
 	JOIN distributors USING (distributor_id)
 	JOIN categories USING (category_id)
 	LEFT JOIN authors USING (author_id)
 	WHERE contract_id=$1
-	ORDER BY contract_id DESC;`, constants.Repo.GetColumns)
+	ORDER BY contract_id DESC;`, constants.Repo.Colum)
 
 	// TODO flag:
 	//	- true: get ScanAll
@@ -65,6 +65,29 @@ func (s *service) GetByID(id uint64) (*model.DocsAttrs, error) {
 
 	return &data, nil
 
+}
+
+func (s *service) GetSps() (*model.Sps, error) {
+
+	var out [][]map[string]interface{}
+
+	query := []string{"SELECT category_id, category_name FROM categories",
+		"SELECT distributor_id, distributor_name FROM distributors"}
+	for i := range query {
+		var data []map[string]interface{}
+		err := s.store.repo.Get(&data, query[i], true)
+		if err != nil {
+			s.logger.Error().Err(err).Send()
+		}
+		out = append(out, data)
+	}
+
+	sps := model.Sps{
+		Category:    out[0],
+		Distributor: out[1],
+	}
+
+	return &sps, nil
 }
 
 func (s *service) Create(bindForm *model.BindForm) error {
@@ -105,19 +128,19 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		return err
 	}
 
-	query := fmt.Sprintf("INSERT INTO contracts	(%s) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-		constants.Repo.CreateColums)
+	query := fmt.Sprintf("INSERT INTO contracts	(category_id, distributor_id, %s, files) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+		constants.Repo.Colum)
 
 	err = s.store.repo.InsertOne(nil, query,
+		category_id,
+		distributor_id,
 		bindForm.DocManagement.Title,
 		bindForm.DocManagement.Number,
 		bindForm.DocManagement.Date,
-		category_id,
 		bindForm.DocManagement.Price,
 		bindForm.DocManagement.StartDate,
 		bindForm.DocManagement.EndDate,
 		bindForm.DocManagement.Description,
-		distributor_id,
 		jsonFiles,
 	)
 	if err != nil {

@@ -1,8 +1,6 @@
 <script setup>
-
 import { formatDate } from '@/utils/common'
 
-let counter_id = 1
 
 const props = defineProps({
     items: {
@@ -15,7 +13,7 @@ const props = defineProps({
     <div class="col-sm-6">
         <slot name="menu"></slot>
     </div>
-    <table v-if="items" class="table table-hover table-striped table-sm">
+    <table class="table table-hover table-striped table-sm">
         <thead>
             <tr>
                 <th scope="col">#</th>
@@ -29,9 +27,9 @@ const props = defineProps({
         </thead>
         <tbody>
             <tr v-for="item in items" :key="item.id">
-                <th scope="row">{{ counter_id++ }}</th>
+                <th scope="row">#</th>
                 <td>
-                    <router-link :to="{ name: 'board_detail_id', params: { id: item.id } }">
+                    <router-link :to="`/board/${item.id}`">
                         {{ item.number }}
                     </router-link>
                 </td>
@@ -48,7 +46,6 @@ const props = defineProps({
             </tr>
         </tbody>
     </table>
-    <div v-else>Загрузка...</div>
 </template>
 
 <style lang="scss" scoped></style>

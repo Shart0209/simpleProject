@@ -2,7 +2,7 @@ INSERT INTO categories
 VALUES (DEFAULT, 'Аукцион'),
        (DEFAULT, 'Единственный поставщик');
 
-INSERT INTO distributors (company_name, contact_name, company_city, region)
+INSERT INTO distributors (distributor_name, contact_name, city, region)
 VALUES ('ПАО Ростелеком', 'Sponge Bob', 'Чита', 'Забайкальский край'),
        ('ПАО МТС', 'Sponge Bob', 'Чита', 'Забайкальский край'),
        ('ПАО Мегафон', 'Sponge Bob', 'Чита', 'Забайкальский край');
@@ -10,53 +10,5 @@ VALUES ('ПАО Ростелеком', 'Sponge Bob', 'Чита', 'Забайка
 INSERT INTO authors (first_name, last_name)
 VALUES ('Лёня', 'Пупкин');
 
-INSERT INTO contracts
-VALUES (DEFAULT,
-        'Оказание услуг по ТО и поддержке ПО «ГРАНД-Смета» для нужд Читинского филиала ФГКУ Росгранстрой',
-        '100297672122100033 ',
-        '2022-12-28',
-        1,
-        168000.00,
-        '2023-01-01',
-        '2023-12-31',
-        1,
-        '',
-        '',
-        1,
-        '2022-12-28 13:45:00'),
 
-       (DEFAULT,
-        'Оказание услуг по ТО',
-        'ЧИТ09-67 ',
-        '2022-12-28',
-        2,
-        168000.00,
-        '2023-01-01',
-        '2023-12-31',
-        2,
-        '',
-        '',
-        1,
-        '2022-12-28 13:45:00'),
 
-       (DEFAULT,
-        'Оказание услуг по предоставлению сети Интернет',
-        '45736 ',
-        '2022-12-28',
-        2,
-        168000.00,
-        '2023-01-01',
-        '2023-12-31',
-        3,
-        '',
-        '',
-        1,
-        '2022-12-28 13:45:00');
-
-INSERT INTO files (file_name, file_size, file_path, contract_id)
-VALUES ('528f3652-3ed5-4bfb-8f28-4992ed24e081', 123000.2, '.\upload', 1),
-       ('8653ed1e-897b-4f82-9ad0-b21369621ae2-1', 33300.2, '.\upload', 2),
-       ('8653ed1e-897b-4f82-9ad0-b21369621ae2-2', 4500.2, '.\upload', 2),
-       ('73579bc7-1fae-48ea-a1f9-6baa5dafd430', 14523, '.\upload', 1),
-       ('94e02523-a4ec-4ceb-85c3-9899fd1860e5-1', 133.20, '.\upload', 2),
-       ('94e02523-a4ec-4ceb-85c3-9899fd1860e5-2', 3.20, '.\upload', 2);

@@ -1,10 +1,10 @@
 CREATE TABLE distributors
 (
-    distributor_id integer GENERATED ALWAYS AS IDENTITY,
-    company_name   varchar(255) NOT NULL,
-    contact_name   varchar(100),
-    company_city   varchar(50),
-    region         varchar(100),
+    distributor_id   integer GENERATED ALWAYS AS IDENTITY,
+    distributor_name varchar(255) NOT NULL,
+    contact_name     varchar(100),
+    city             varchar(50),
+    region           varchar(100),
 
     CONSTRAINT pk_distributor_id PRIMARY KEY (distributor_id)
 );
@@ -56,3 +56,34 @@ CREATE TABLE contracts
     CONSTRAINT fk_contracts_authors FOREIGN KEY (author_id) REFERENCES authors
 );
 
+INSERT INTO categories
+VALUES (DEFAULT, 'Открытый конкурс'),
+       (DEFAULT, 'Открытый конкурс в электронной форме'),
+       (DEFAULT, 'Электронный аукцион'),
+       (DEFAULT, 'Закрытый аукцион'),
+       (DEFAULT, 'Закрытый аукцион в электронной форме'),
+       (DEFAULT, 'Закрытый конкурс'),
+       (DEFAULT, 'Закрытый конкурс в электронной форме'),
+       (DEFAULT, 'Конкурс с ограниченным участием'),
+       (DEFAULT, 'Конкурс с ограниченным участием в электронной форме'),
+       (DEFAULT, 'Закрытый конкурс с ограниченным участием'),
+       (DEFAULT, 'Закрытый конкурс с ограниченным участием в электронной форме'),
+       (DEFAULT, 'Двухэтапный конкурс'),
+       (DEFAULT, 'Двухэтапный конкурс в электронной форме'),
+       (DEFAULT, 'Закрытый двухэтапный конкурс'),
+       (DEFAULT, 'Закрытый двухэтапный конкурс в электронной форме'),
+       (DEFAULT, 'Запрос предложений'),
+       (DEFAULT, 'Запрос предложений в электронной форме'),
+       (DEFAULT, 'Запрос котировок'),
+       (DEFAULT, 'Запрос котировок в электронной форме'),
+       (DEFAULT, 'Единственный поставщик (п. 1 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 2 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 4 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 6 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 8 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 9 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 19 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 22 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 23 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 29 ч. 1 ст. 93)'),
+       (DEFAULT, 'Единственный поставщик (п. 32 ч. 1 ст. 93)');

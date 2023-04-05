@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, onMounted } from "vue";
+import { storeToRefs } from 'pinia'
 
 import { Modal } from "bootstrap";
 
@@ -7,8 +8,12 @@ import Board from "@/components/Board.vue";
 import ModalForm from "@/components/Modal.vue";
 import CreateForm from '@/components/CreateForm.vue';
 
-import { initialAttrs, URL, optionsSelect } from '@/utils/constants';
-import { useFetch } from '@/utils/common';
+import { initialAttrs, URL } from '@/utils/constants';
+import { useDocsStore } from '@/stores/docs'
+
+
+const { items, error, optionsSelect } = storeToRefs(useDocsStore())
+const { useFetchDocs, getOptionSelect } = useDocsStore()
 
 const state = reactive({
     modal_demo: null
@@ -17,22 +22,8 @@ const state = reactive({
 const attrs = reactive({ ...initialAttrs });
 let selectedFiles = reactive([])
 
-const items = reactive({
-    res: {},
-    error: {},
-})
-
-
-// function getDoc() {
-//     useFetch(URL)
-//         .then((res) => {
-//             items.res = res.res;
-//             items.error = res.error;
-//         });
-// }
-
-
-
+useFetchDocs(URL)
+getOptionSelect(`${URL}sps`)
 
 async function createDoc() {
 
@@ -54,15 +45,14 @@ async function createDoc() {
             method: 'POST',
             body: formData
         });
-
     } catch (error) {
         console.error('Ошибка:', error);
     }
 
+
     state.modal_demo.hide()
     resetForm()
-    getDoc()
-
+    useFetchDocs(URL)
 }
 
 // TODO Доделать резет формы, а именно поля selectedFiles
@@ -79,31 +69,27 @@ function showModal() {
 function closeModal() {
     state.modal_demo.hide()
     resetForm()
-    getDoc()
 }
 
 onMounted(() => {
     state.modal_demo = new Modal('#modal_demo', {
         keyboard: false
     })
-    getDoc()
+
 })
 
 </script>
 
 <template>
-    {{ items }}
-    <section>
+    <section v-if="!error">
         <!-- Component Board -->
-        <!-- <Board :items="items.value.res">
-                <template #menu>
-                    <button type="button" class="btn btn-primary" @click="showModal">Create</button>
-                </template>
-            </Board> -->
+        <Board :items="items.data">
+            <template #menu>
+                <button type="button" class="btn btn-primary" @click="showModal">Create</button>
+            </template>
+        </Board>
     </section>
-    <section>
-        <!-- {{ items.value.error }} -->
-    </section>
+    <p v-else>{{ error.message }}</p>
 
     <section>
         <!-- Component Modal -->
