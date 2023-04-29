@@ -96,6 +96,11 @@ func (s *server) configureRouter() {
 		log: s.logger.With().Str("transport", "get all/id document").Logger(),
 	}
 
+	download := &getDownloadFileTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "get download file").Logger(),
+	}
+
 	sps := &getCatTransport{
 		svc: s.svc,
 		log: s.logger.With().Str("transport", "get list categories/distributors").Logger(),
@@ -110,6 +115,7 @@ func (s *server) configureRouter() {
 	doc.GET("/", s.middleware(get))
 	doc.GET("/:id", s.middleware(get))
 	doc.GET("/sps", s.middleware(sps))
+	doc.GET("/download/:id", s.middleware(download))
 	doc.POST("/add", s.middleware(add))
 	doc.PATCH("/update/:id", s.middleware(upd))
 	doc.DELETE("/delete/:id", s.middleware(del))

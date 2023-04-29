@@ -6,17 +6,6 @@ const props = defineProps({
   selectedFiles: { type: Array },
 })
 
-// let date = formatDate(props.attrs.date)
-// props.attrs.start_date = formatDate(props.attrs.start_date)
-// props.attrs.end_date = formatDate(props.attrs.end_date)
-
-console.log(props.attrs);
-
-
-function formatDate(v) {
-  return new Date(v).toLocaleDateString("sv");
-}
-
 function onChangeCategory(e) {
   props.attrs.category = e.target.value;
 }

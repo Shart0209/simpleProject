@@ -22,9 +22,6 @@ const state = reactive({
 const attrs = reactive({ ...initialAttrs });
 let selectedFiles = reactive([])
 
-useFetchDocs(URL)
-getOptionSelect(`${URL}sps`)
-
 async function createDoc() {
 
     let formData = new FormData();
@@ -75,7 +72,8 @@ onMounted(() => {
     state.modal_demo = new Modal('#modal_demo', {
         keyboard: false
     })
-
+    useFetchDocs(URL)
+    getOptionSelect(`${URL}sps`)
 })
 
 </script>

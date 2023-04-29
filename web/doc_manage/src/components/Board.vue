@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate } from '@/utils/common'
+import { formatDateRU } from '@/utils/common'
 
 
 const props = defineProps({
@@ -34,7 +34,7 @@ const props = defineProps({
                     </router-link>
                 </td>
                 <td>{{ item.title }}</td>
-                <td>{{ formatDate(item.date) }}</td>
+                <td>{{ formatDateRU(item.date) }}</td>
                 <td>{{ item.category }}</td>
                 <td>{{ item.price }}</td>
                 <td v-if="item.status">
