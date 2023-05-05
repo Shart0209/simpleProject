@@ -1,4 +1,4 @@
-export const URL = "http://localhost:8080/docs/";
+export const URL = "http://localhost:8080/api/docs/";
 
 export const initialAttrs = {
   title: "",

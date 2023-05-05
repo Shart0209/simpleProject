@@ -66,6 +66,7 @@ function showModal() {
 function closeModal() {
     state.modal_demo.hide()
     resetForm()
+    useFetchDocs(URL)
 }
 
 onMounted(() => {
@@ -79,7 +80,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <section v-if="!error">
+    <section>
         <!-- Component Board -->
         <Board :items="items.data">
             <template #menu>
@@ -87,7 +88,7 @@ onMounted(() => {
             </template>
         </Board>
     </section>
-    <p v-else>{{ error.message }}</p>
+    <p v-if="error">Ооопля, пусто однако!</p>
 
     <section>
         <!-- Component Modal -->

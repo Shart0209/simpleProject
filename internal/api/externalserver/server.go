@@ -84,21 +84,21 @@ func (s *server) configureRouter() {
 	// init transports
 	add := &addTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "create document").Logger(),
+		log: s.logger.With().Str("transport", "create").Logger(),
 	}
 	upd := &updTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "update document").Logger(),
+		log: s.logger.With().Str("transport", "update").Logger(),
 	}
 
 	get := &getTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "get all/id document").Logger(),
+		log: s.logger.With().Str("transport", "get all/id").Logger(),
 	}
 
 	download := &getDownloadFileTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "get download file").Logger(),
+		log: s.logger.With().Str("transport", "get file").Logger(),
 	}
 
 	sps := &getCatTransport{
@@ -108,17 +108,17 @@ func (s *server) configureRouter() {
 
 	del := &delTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "delete by id document").Logger(),
+		log: s.logger.With().Str("transport", "delete by id").Logger(),
 	}
 
-	doc := s.router.Group("/docs")
-	doc.GET("/", s.middleware(get))
-	doc.GET("/:id", s.middleware(get))
-	doc.GET("/sps", s.middleware(sps))
-	doc.GET("/download/:id", s.middleware(download))
-	doc.POST("/add", s.middleware(add))
-	doc.PATCH("/update/:id", s.middleware(upd))
-	doc.DELETE("/delete/:id", s.middleware(del))
+	api := s.router.Group("api/docs")
+	api.GET("/", s.middleware(get))
+	api.GET("/:id", s.middleware(get))
+	api.GET("/sps", s.middleware(sps))
+	api.GET("/download/:id", s.middleware(download))
+	api.POST("/add", s.middleware(add))
+	api.PATCH("/update/:id", s.middleware(upd))
+	api.DELETE("/delete/:id", s.middleware(del))
 }
 
 func (s *server) middleware(tr transport) func(*gin.Context) {

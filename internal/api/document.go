@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	filepath "path/filepath"
 	"simpleProject/pkg/constants"
 	"simpleProject/pkg/model"
 	"simpleProject/pkg/util"
@@ -97,9 +98,17 @@ func (s *service) Create(bindForm *model.BindForm) error {
 
 	data := []model.Files{}
 
+	res := util.ReplaceNameFolder(&bindForm.DocManagement.Number)
+
+	folderPath := filepath.Join(s.cfg.FilesFolder, res)
+	if err := util.CreateFolder(&folderPath); err != nil {
+		s.baseLogger.Error().Err(err).Send()
+		return err
+	}
+
 	if len(bindForm.BindFiles) != 0 {
 
-		err := util.ParserBindForm(bindForm.BindFiles, s.cfg.FilesFolder, &data)
+		err := util.ParserBindForm(bindForm.BindFiles, folderPath, &data)
 		if err != nil {
 			return fmt.Errorf("failed to parse bind form")
 		}
@@ -118,12 +127,12 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		}
 	}
 
-	category_id, err := strconv.Atoi(bindForm.DocManagement.Category)
+	categoryID, err := strconv.Atoi(bindForm.DocManagement.Category)
 	if err != nil {
 		return err
 	}
 
-	distributor_id, err := strconv.Atoi(bindForm.DocManagement.Distributor)
+	distributorID, err := strconv.Atoi(bindForm.DocManagement.Distributor)
 	if err != nil {
 		return err
 	}
@@ -132,8 +141,8 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		constants.Repo.Colum)
 
 	err = s.store.repo.InsertOne(nil, query,
-		category_id,
-		distributor_id,
+		categoryID,
+		distributorID,
 		bindForm.DocManagement.Title,
 		bindForm.DocManagement.Number,
 		bindForm.DocManagement.Date,
@@ -169,26 +178,37 @@ func (s *service) Update(id int, bindForm *model.BindForm) error {
 func (s *service) Delete(id uint64) error {
 	start := time.Now()
 
-	//delete records by id
-	query := `DELETE FROM contracts WHERE contract_id=$1 RETURNING files;`
+	//delete files by id from folder
+	query := `DELETE FROM contracts WHERE contract_id=$1 RETURNING contr_number;`
 
-	var data model.DocsAttrs
-	err := s.store.repo.InsertOne(&data.AttrFiles, query, int(id))
+	var data string
+	err := s.store.repo.InsertOne(&data, query, int(id))
 	if err != nil {
 		s.logger.Error().Err(err).Send()
 		return fmt.Errorf("failed %w", err)
 	}
 
-	if data.AttrFiles != nil {
-		var items = data.AttrFiles["attr"].([]interface{})
-		for _, item := range items {
-			res := item.(map[string]interface{})
-			path := res["path"].(string)
-			if err := util.DeleteFile(&path); err != nil {
-				return fmt.Errorf("failed to delete file %w", err)
-			}
-		}
+	baseDir, err := filepath.Abs(s.cfg.FilesFolder)
+	if err != nil {
+		return fmt.Errorf("path folder to ./upload/%s not found", data)
 	}
+	res := util.ReplaceNameFolder(&data)
+	pathDir := filepath.Join(baseDir, res)
+
+	if err := util.DeleteFile(&pathDir); err != nil {
+		return fmt.Errorf("failed to delete folder %w", err)
+	}
+	//var pathDir string
+	//if data.AttrFiles != nil {
+	//	var items = data.AttrFiles["attr"].([]interface{})
+	//	pathDir = filepath.Dir(items[0].(map[string]interface{})["path"].(string))
+	//	for _, item := range items {
+	//		res := item.(map[string]interface{})
+	//		path := res["path"].(string)
+	//		if err := util.DeleteFile(&path); err != nil {
+	//			return fmt.Errorf("failed to delete file %w", err)
+	//		}
+	//	}
 
 	duration := time.Since(start)
 	fmt.Println(duration) //15.872689ms -> 626.186µs

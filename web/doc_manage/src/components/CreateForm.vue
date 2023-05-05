@@ -29,59 +29,61 @@ function onChangeFile(e) {
 </script>
 
 <template>
-  <form method="POST" class="needs-validation" novalidate enctype="multipart/form-data" @submit.prevent>
+  <form method="POST" class="was-validated" enctype="multipart/form-data" @submit.prevent>
     <div class="row g-3">
       <div class="col-12 mb-2">
-        <input type="text" class="form-control" v-model="attrs.title" placeholder="Наименование">
+        <input type="text" class="form-control" v-model="attrs.title" placeholder="Наименование" required>
         <div class="invalid-feedback">
           Valid title is required.
         </div>
       </div>
       <div class="col-sm-6">
-        <input type="text" class="form-control" v-model="attrs.number" placeholder="Номер">
+        <input type="text" class="form-control" v-model="attrs.number" placeholder="Номер" required>
         <div class="invalid-feedback">
           Valid number is required.
         </div>
       </div>
       <div class="col-sm-6">
-        <input type="number" class="form-control" v-model="attrs.price" placeholder="Цена контракта">
+        <input type="number" class="form-control" v-model="attrs.price" placeholder="Цена контракта" required>
         <div class="invalid-feedback">
           Valid price is required.
         </div>
       </div>
 
       <div class="col-sm-4 mb-2">
-        <label for="date" class="form-label">Дата заключения</label>
-        <input type="date" class="form-control" v-model="attrs.date">
+        <label>Дата заключения</label>
+        <input type="date" class="form-control" v-model="attrs.date" required>
         <div class="invalid-feedback">
           Valid date is required.
         </div>
       </div>
       <div class="col-sm-4 mb-2">
-        <label for="start_date" class="form-label">Дата начала действия</label>
-        <input type="date" class="form-control" v-model="attrs.start_date">
+        <label>Дата начала действия</label>
+        <input type="date" class="form-control" v-model="attrs.start_date" required>
         <div class="invalid-feedback">
           Valid date is required.
         </div>
       </div>
       <div class="col-sm-4 mb-2">
-        <label for="end_date" class="form-label">Дата окончания действия</label>
-        <input type="date" class="form-control" v-model="attrs.end_date">
+        <label>Дата окончания действия</label>
+        <input type="date" class="form-control" v-model="attrs.end_date" required>
         <div class="invalid-feedback">
           Valid date is required.
         </div>
       </div>
       <div class="col-sm-6">
-        <select class="form-floating form-select" @change="onChangeCategory($event)">
-          <option disabled selected>Способ заключения</option>
-          <option v-for="item in optionsSelect.categories" :key=item.category_id :value="item.category_id">{{ item.category_name }}
+        <select class="form-floating form-select" @change="onChangeCategory($event)" required>
+          <option disabled selected value="">Способ заключения</option>
+          <option v-for="item in optionsSelect.categories" :key=item.category_id :value="item.category_id">{{
+            item.category_name }}
           </option>
         </select>
       </div>
       <div class="col-sm-6">
-        <select class="form-floating form-select" @change="onChangeDescription($event)">
-          <option disabled selected>Поставщик</option>
-          <option v-for="item in optionsSelect.distributors" :key=item.distributor_id :value="item.distributor_id">{{ item.distributor_name }}
+        <select class="form-floating form-select" @change="onChangeDescription($event)" required>
+          <option disabled selected value="">Поставщик</option>
+          <option v-for="item in optionsSelect.distributors" :key=item.distributor_id :value="item.distributor_id">{{
+            item.distributor_name }}
           </option>
         </select>
       </div>

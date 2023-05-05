@@ -43,6 +43,6 @@ type Sps struct {
 	Distributor []map[string]interface{}
 }
 
-func (b *BindForm) Verify() bool {
-	return true
-}
+//func (b *BindForm) Verify() bool {
+//	return true
+//}

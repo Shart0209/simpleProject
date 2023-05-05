@@ -7,8 +7,10 @@ import (
 	"mime/multipart"
 	"os"
 	"path/filepath"
+	"regexp"
 	"simpleProject/pkg/model"
 	"strconv"
+	"strings"
 )
 
 func CreateFolder(path *string) error {
@@ -33,7 +35,7 @@ func DeleteFile(path *string) error {
 			return err
 		}
 	}
-	err := os.Remove(*path)
+	err := os.RemoveAll(*path)
 	if err != nil {
 		return err
 	}
@@ -41,13 +43,13 @@ func DeleteFile(path *string) error {
 	return nil
 }
 
-func ParserBindForm(bindFiles []*multipart.FileHeader, folder string, data *[]model.Files) error {
+func ParserBindForm(bindFiles []*multipart.FileHeader, path string, data *[]model.Files) error {
 
 	fileID := uuid.New().String()
 
-	baseDir, err := filepath.Abs(folder)
+	baseDir, err := filepath.Abs(path)
 	if err != nil {
-		return fmt.Errorf("path folder to ./upload not found")
+		return fmt.Errorf("path folder to ./upload/... not found")
 	}
 
 	for i, file := range bindFiles {
@@ -84,4 +86,11 @@ func SaveUploadedFile(file *multipart.FileHeader, dst *string) error {
 
 	_, err = io.Copy(out, src)
 	return err
+}
+
+func ReplaceNameFolder(str *string) string {
+	re := regexp.MustCompile(`[/|*<>:*?"]+`)
+	res := re.ReplaceAllString(*str, "-")
+	res = strings.ToUpper(fmt.Sprintf("ГК № %s", res))
+	return res
 }
