@@ -1,41 +1,39 @@
 package externalserver
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"net/http"
 	"simpleProject/pkg/model"
-	"strconv"
 )
 
-type updTransport struct {
+type addTransport struct {
 	svc Service
 	log zerolog.Logger
 }
 
-func (t *updTransport) handler(ctx *gin.Context) {
+func (t *addTransport) Handler(ctx *gin.Context) {
+
 	var bindForm model.BindForm
 
 	if err := ctx.ShouldBind(&bindForm); err != nil {
 		t.log.Error().Err(err).Send()
-
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
 
-	id := ctx.Param("id")
-	idx, err := strconv.Atoi(id)
-	if err != nil {
+	if bindForm.Docs == nil {
+		err := fmt.Errorf("form data is empty")
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+		return
+	}
+
+	if err := t.svc.Create(&bindForm); err != nil {
 		t.log.Error().Err(err).Send()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
 
-	if err := t.svc.Update(idx, &bindForm); err != nil {
-		t.log.Error().Err(err).Send()
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
-		return
-	}
-
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusCreated)
 }

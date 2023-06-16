@@ -3,11 +3,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	filepath "path/filepath"
 	"simpleProject/pkg/constants"
 	"simpleProject/pkg/model"
 	"simpleProject/pkg/util"
-	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,11 +17,12 @@ func (s *service) GetAll() ([]*model.DocsAttrs, error) {
 
 	var data []*model.DocsAttrs
 
-	query := fmt.Sprintf(`SELECT contract_id, created_at, distributor_name, category_name, files,status, %s 
-	FROM contracts
-	JOIN distributors USING (distributor_id)
+	query := fmt.Sprintf(`SELECT %s 
+	FROM commons
+	JOIN contracts USING (contract_id)
+	JOIN suppliers USING (supplier_id)
 	JOIN categories USING (category_id)
-	LEFT JOIN authors USING (author_id)
+	JOIN c_groups USING (c_groups_id)
 	ORDER BY contract_id DESC;`, constants.Repo.Colum)
 
 	// TODO flag:
@@ -33,32 +35,32 @@ func (s *service) GetAll() ([]*model.DocsAttrs, error) {
 	}
 
 	duration := time.Since(start)
-	fmt.Println(duration) //15.872689ms -> 626.186µs
+	fmt.Println(duration)
 
 	return data, nil
 }
 
-func (s *service) GetByID(id uint64) (*model.DocsAttrs, error) {
+func (s *service) GetByID(ID uint64) (*model.DocsAttrs, error) {
 
 	start := time.Now()
 
 	var data model.DocsAttrs
 
-	query := fmt.Sprintf(`SELECT contract_id, created_at,distributor_name,category_name,files,status, %s 
-	FROM contracts
-	JOIN distributors USING (distributor_id)
+	query := fmt.Sprintf(`SELECT %s 
+	FROM commons
+	JOIN contracts USING (contract_id)
+	JOIN suppliers USING (supplier_id)
 	JOIN categories USING (category_id)
-	LEFT JOIN authors USING (author_id)
-	WHERE contract_id=$1
-	ORDER BY contract_id DESC;`, constants.Repo.Colum)
+	JOIN c_groups USING (c_groups_id)
+	WHERE commons.contract_id=$1;`, constants.Repo.Colum)
 
 	// TODO flag:
 	//	- true: get ScanAll
 	// 	- false: get ScanOne
-	err := s.store.repo.Get(&data, query, false, int(id))
+	err := s.store.repo.Get(&data, query, false, int(ID))
 	if err != nil {
 		s.logger.Error().Err(err).Send()
-		return nil, fmt.Errorf("ID not found id=%v", id)
+		return nil, fmt.Errorf("ID not found ID=%v", ID)
 	}
 
 	duration := time.Since(start)
@@ -72,8 +74,10 @@ func (s *service) GetSps() (*model.Sps, error) {
 
 	var out [][]map[string]interface{}
 
-	query := []string{"SELECT category_id, category_name FROM categories",
-		"SELECT distributor_id, distributor_name FROM distributors"}
+	query := []string{
+		"SELECT category_id AS id, categories.name AS name FROM categories",
+		"SELECT supplier_id AS id, suppliers.name AS name FROM suppliers",
+		"SELECT c_groups_id AS id, c_groups.name AS name FROM c_groups"}
 	for i := range query {
 		var data []map[string]interface{}
 		err := s.store.repo.Get(&data, query[i], true)
@@ -84,8 +88,9 @@ func (s *service) GetSps() (*model.Sps, error) {
 	}
 
 	sps := model.Sps{
-		Category:    out[0],
-		Distributor: out[1],
+		Category:  out[0],
+		Suppliers: out[1],
+		Groups:    out[2],
 	}
 
 	return &sps, nil
@@ -98,7 +103,7 @@ func (s *service) Create(bindForm *model.BindForm) error {
 
 	data := []model.Files{}
 
-	res := util.ReplaceNameFolder(&bindForm.DocManagement.Number)
+	res := util.ReplaceNameFolder(&bindForm.Docs.Number)
 
 	folderPath := filepath.Join(s.cfg.FilesFolder, res)
 	if err := util.CreateFolder(&folderPath); err != nil {
@@ -115,8 +120,7 @@ func (s *service) Create(bindForm *model.BindForm) error {
 
 		var res []model.File
 		for _, item := range data {
-			tmp := item.File
-			res = append(res, tmp)
+			res = append(res, item.File)
 		}
 		attr := make(map[string]interface{}, 1)
 		attr["attr"] = res
@@ -127,38 +131,38 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		}
 	}
 
-	categoryID, err := strconv.Atoi(bindForm.DocManagement.Category)
-	if err != nil {
-		return err
-	}
-
-	distributorID, err := strconv.Atoi(bindForm.DocManagement.Distributor)
-	if err != nil {
-		return err
-	}
-
-	query := fmt.Sprintf("INSERT INTO contracts	(category_id, distributor_id, %s, files) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-		constants.Repo.Colum)
-
-	err = s.store.repo.InsertOne(nil, query,
-		categoryID,
-		distributorID,
-		bindForm.DocManagement.Title,
-		bindForm.DocManagement.Number,
-		bindForm.DocManagement.Date,
-		bindForm.DocManagement.Price,
-		bindForm.DocManagement.StartDate,
-		bindForm.DocManagement.EndDate,
-		bindForm.DocManagement.Description,
+	query := `WITH new_contract as  (
+	INSERT INTO contracts (title, numb, price, date, start_date, end_date, description, files)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	RETURNING contract_id
+	)
+	INSERT INTO commons
+	SELECT contract_id, $9, $10, $11, 1 from new_contract`
+	err := s.store.repo.InsertOne(nil, query,
+		bindForm.Docs.Title,
+		bindForm.Docs.Number,
+		bindForm.Docs.Price,
+		bindForm.Docs.Date,
+		bindForm.Docs.StartDate,
+		bindForm.Docs.EndDate,
+		bindForm.Docs.Description,
 		jsonFiles,
+		bindForm.Docs.Supplier,
+		bindForm.Docs.Category,
+		bindForm.Docs.Group,
 	)
 	if err != nil {
 		s.logger.Error().Err(err).Send()
+
+		if err := util.DeleteFile(&folderPath); err != nil {
+			return fmt.Errorf("failed to create and delete folder")
+		}
+
 		return fmt.Errorf("failed to create")
 	}
 
 	for _, item := range data {
-		if err := util.SaveUploadedFile(item.Files, &item.File.Path); err != nil {
+		if err := util.SaveUploadedFile(item.Files, &item.File.ID, &item.File.Path); err != nil {
 			s.logger.Error().Err(err).Send()
 			return fmt.Errorf("upload file err: %s", err.Error())
 		}
@@ -170,19 +174,53 @@ func (s *service) Create(bindForm *model.BindForm) error {
 	return nil
 }
 
-func (s *service) Update(id int, bindForm *model.BindForm) error {
+func (s *service) Update(res map[string]interface{}, ID uint64) error {
+
+	var str1 string
+
+	//if res["title"] !=
+
+	//if res.title != "" {
+	//	str1 += fmt.Sprintf("title=%v, ", res.Title)
+	//} else if res.Number != "" {
+	//	str1 += fmt.Sprintf("numb=%v, ", res.Number)
+	//} else if res.Price != 0 {
+	//	str1 += fmt.Sprintf("price=%v, ", res.Price)
+	//} else if res.Description != "" {
+	//	str1 += fmt.Sprintf("description=%v, ", res.Description)
+	//} else if res.Date != time.Date("0001-01-01 00:00:00 +0000") {
+	//	str1 += fmt.Sprintf("date=%v, ", res.Date)
+	//} else if res.Start_date != "0001-01-01 00:00:00 +0000" {
+	//	str1 += fmt.Sprintf("start_date=%v, ", res.Start_date)
+	//} else if res.End_date != "0001-01-01 00:00:00 +0000" {
+	//	str1 += fmt.Sprintf("end_date=%v, ", res.End_date)
+	//}
+
+	_ = res
+	//str += fmt.Sprintf("%s=%v, ", key, val)
+
+	_ = str1
+	//query := `WITH upd_contract as (
+	//UPDATE contracts
+	//SET title='blablabla', numb='12345-576'
+	//WHERE contract_id =3
+	//RETURNING contract_id as id
+	//)
+	//UPDATE commons
+	//SET status=false
+	//WHERE contract_id=(SELECT id from upd_contract)`
 
 	return nil
 }
 
-func (s *service) Delete(id uint64) error {
+func (s *service) Delete(ID uint64) error {
 	start := time.Now()
 
-	//delete files by id from folder
-	query := `DELETE FROM contracts WHERE contract_id=$1 RETURNING contr_number;`
+	//delete files by ID from folder
+	query := `DELETE FROM contracts WHERE contract_id=$1 RETURNING numb;`
 
 	var data string
-	err := s.store.repo.InsertOne(&data, query, int(id))
+	err := s.store.repo.InsertOne(&data, query, int(ID))
 	if err != nil {
 		s.logger.Error().Err(err).Send()
 		return fmt.Errorf("failed %w", err)
@@ -211,7 +249,32 @@ func (s *service) Delete(id uint64) error {
 	//	}
 
 	duration := time.Since(start)
-	fmt.Println(duration) //15.872689ms -> 626.186µs
+	fmt.Println(duration)
 
 	return nil
+}
+
+func (s *service) GetFilePath(fileName string, ID string) (string, error) {
+
+	res := strings.Split(fileName, ".")[0]
+	idx := res[len(res)-1:]
+
+	query := fmt.Sprintf("SELECT files::json->'attr'->%s->'path' FROM contracts WHERE contract_id = %s", idx, ID)
+
+	var data interface{}
+	err := s.store.repo.Get(&data, query, false)
+	if err != nil {
+		s.logger.Error().Err(err).Send()
+		return "", err
+	}
+
+	path := filepath.Join(data.(string), fileName)
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			s.logger.Error().Err(err).Msg("file does not exist")
+			return "", err
+		}
+	}
+
+	return data.(string), nil
 }

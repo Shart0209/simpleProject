@@ -10,22 +10,23 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+func fatal(err error, msg string) {
+	if err != nil {
+		log.Fatal().Err(err).Msg(msg)
+	}
+}
+
 func main() {
 	cfg, err := api.NewConfig()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed get config")
-	}
+	fatal(err, "failed get config")
+
 	g, ctx := errgroup.WithContext(context.Background())
 
 	svc, err := api.New(ctx, cfg)
-	if err != nil {
-		log.Fatal().Err(err).Msg("errors create service")
-	}
+	fatal(err, "errors create service")
 
 	err = svc.Start(ctx, g)
-	if err != nil {
-		log.Fatal().Err(err).Msg("errors start service")
-	}
+	fatal(err, "errors start service")
 
 	if err := g.Wait(); err != nil {
 		if !errors.Is(err, sig.ErrShutdownSignalReceived) {
@@ -34,10 +35,8 @@ func main() {
 
 		log.Info().Msg("service stopping")
 
-		err = svc.Stop()
-		if err != nil {
-			log.Fatal().Err(err).Msg("errors stop service")
-		}
+		err := svc.Stop()
+		fatal(err, "errors stop service")
 
 		log.Info().Msg("service stopped")
 	}

@@ -55,13 +55,13 @@ func ParserBindForm(bindFiles []*multipart.FileHeader, path string, data *[]mode
 	for i, file := range bindFiles {
 		ext := filepath.Base(file.Filename)
 		filename := fileID + "-" + strconv.Itoa(i) + filepath.Ext(ext)
-		filePath := filepath.Join(baseDir, filename)
 
 		tmp := model.Files{
 			File: model.File{
-				Name: filename,
+				ID:   filename,
+				Name: file.Filename,
 				Size: int(file.Size),
-				Path: filePath,
+				Path: baseDir,
 			},
 			Files: file,
 		}
@@ -70,7 +70,7 @@ func ParserBindForm(bindFiles []*multipart.FileHeader, path string, data *[]mode
 	return nil
 }
 
-func SaveUploadedFile(file *multipart.FileHeader, dst *string) error {
+func SaveUploadedFile(file *multipart.FileHeader, filename *string, dst *string) error {
 
 	src, err := file.Open()
 	if err != nil {
@@ -78,7 +78,7 @@ func SaveUploadedFile(file *multipart.FileHeader, dst *string) error {
 	}
 	defer src.Close()
 
-	out, err := os.Create(*dst)
+	out, err := os.Create(filepath.Join(*dst, *filename))
 	if err != nil {
 		return err
 	}

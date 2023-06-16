@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type getCatTransport struct {
+type getCategoryTransport struct {
 	svc Service
 	log zerolog.Logger
 }
 
-func (t *getCatTransport) handler(ctx *gin.Context) {
+func (t *getCategoryTransport) Handler(ctx *gin.Context) {
 
-	// get list categories/distributor /documents/sps
+	// get list categories/distributor http://apiV1/docs/sps
 	data, err := t.svc.GetSps()
 	if err != nil {
 		t.log.Fatal().Err(err).Msg("errors get list categories/distributor")

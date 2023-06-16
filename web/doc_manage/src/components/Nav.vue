@@ -1,31 +1,40 @@
 <script setup>
-import { computed } from "vue";
-import { useRouter } from "vue-router";
-import { routes } from "@/router";
+import { useAuthStore } from '@/stores';
 
-const siteUrl = import.meta.env.VITE_BUILD_ADDRESS;
-const router = useRouter();
-const activeRoute = computed(() => router.currentRoute.value.path);
-const isActive = (path) => path === activeRoute.value;
-
+const authStore = useAuthStore();
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container">
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item text-uppercase" v-for="route in routes" :key="route.path">
-                        <router-link class="nav-link" :to="route.path"
-                            v-if="route.children[0].name !== '404' && route.children[0].name !== 'board_detail_id'"
-                            :title="route.children[0].name" :class="{ active: isActive(route.path) }">
-                            {{ route.children[0].name }}
-                        </router-link>
-                    </li>
-                </ul>
-            </div>
+    <div class="container">
+        <div class="col-md-10 offset-1">
+            <nav class="navbar navbar-expand-lg border-bottom py-1 mb-4">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav fs-5 me-auto">
+                        <li class="nav-item">
+                            <router-link class="nav-link" to="/">
+                                <i class="bi bi-house-fill"></i>
+                            </router-link>
+                        </li>
+                        <li class="nav-item text-uppercase">
+                            <router-link class="nav-link" to="/board">board</router-link>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav fs-4">
+                        <li v-if="authStore.user" class="nav-item ">
+                            <a @click="authStore.logout()" class="nav-link" href="#">
+                                <i class="bi bi-door-open-fill"></i>
+                            </a>
+                        </li>
+                        <li v-else="authStore.user" class="nav-item">
+                            <router-link class="nav-link" to="/login">
+                                <i class="bi bi-person-circle"></i>
+                            </router-link>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
         </div>
-    </nav>
+    </div>
 </template>
 
 <style lang="scss" scoped></style>

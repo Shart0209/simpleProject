@@ -8,12 +8,12 @@ import (
 )
 
 type Config struct {
-	IsDebug       string `envconfig:"IS_DEBUG" default:"true"`
-	LogLevel      string `envconfig:"LOG_LEVEL" default:"debug"`
-	Listen        string `envconfig:"LISTEN" default:":8080"`
-	FilesFolder   string `envconfig:"FILES_FOLDER" default:"upload"`
-	Postgres      *StorageConfig
-	Authorization *AuthorizationConfig
+	IsDebug     string `envconfig:"IS_DEBUG" default:"true"`
+	LogLevel    string `envconfig:"LOG_LEVEL" default:"debug"`
+	Listen      string `envconfig:"LISTEN" default:":8000"`
+	FilesFolder string `envconfig:"FILES_FOLDER" default:"upload"`
+	Postgres    *StorageConfig
+	AuthConfig  *AuthConfig
 }
 
 type StorageConfig struct {
@@ -27,7 +27,8 @@ type StorageConfig struct {
 	MaxConns         int           `envconfig:"POSTGRES_MAX_CONNS" default:"32"`
 }
 
-type AuthorizationConfig struct {
+type AuthConfig struct {
+	SecretKeyJWT string `envconfig:"SECRET_KEY_JWT" default:"secret_key_jwt"`
 }
 
 func init() {

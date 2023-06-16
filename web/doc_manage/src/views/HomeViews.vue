@@ -1,5 +1,7 @@
 <script setup></script>
 
 <template>
-      <h2>HOME PAGE</h2>
+      <div class="col-md-10">
+            <h2>HOME PAGE</h2>
+      </div>
 </template>

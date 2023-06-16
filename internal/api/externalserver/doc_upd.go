@@ -1,20 +1,22 @@
 package externalserver
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"io"
 	"net/http"
 	"strconv"
 )
 
-type delTransport struct {
+type updTransport struct {
 	svc Service
 	log zerolog.Logger
 }
 
-func (t *delTransport) handler(ctx *gin.Context) {
-	//delete by id document /documents/delete/:id
+func (t *updTransport) Handler(ctx *gin.Context) {
+
 	id := ctx.Param("id")
 	if id == "" {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "bad request by ID {_} not found"})
@@ -27,13 +29,20 @@ func (t *delTransport) handler(ctx *gin.Context) {
 		return
 	}
 
-	err = t.svc.Delete(idx)
-	if err != nil {
+	var res map[string]interface{}
 
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: fmt.Sprintf("bad request by ID {%s} not found", id)})
+	body, _ := io.ReadAll(ctx.Request.Body)
+	if err := json.Unmarshal(body, &res); err != nil {
+		t.log.Error().Err(err).Send()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
 		return
 	}
 
-	ctx.AbortWithStatusJSON(http.StatusOK, Response{Data: "Success"})
-	return
+	if err := t.svc.Update(res, idx); err != nil {
+		t.log.Error().Err(err).Send()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }

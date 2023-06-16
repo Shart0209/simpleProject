@@ -5,7 +5,7 @@
         </h4>
         <div class="card-body">
             <div class="card-text fs-5 text">
-                <slot name="text"></slot>
+                <slot name="body"></slot>
             </div>
         </div>
         <div class="card-footer text-muted">

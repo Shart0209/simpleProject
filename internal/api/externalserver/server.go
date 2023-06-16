@@ -3,20 +3,25 @@ package externalserver
 import (
 	"context"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog"
 	"net/http"
 	"simpleProject/pkg/model"
-
-	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
+	"time"
 )
 
 type Service interface {
 	GetAll() ([]*model.DocsAttrs, error)
 	GetByID(uint64) (*model.DocsAttrs, error)
 	Create(*model.BindForm) error
-	Update(int, *model.BindForm) error
+	Update(map[string]interface{}, uint64) error
 	Delete(uint64) error
 	GetSps() (*model.Sps, error)
+	GetFilePath(string, string) (string, error)
+	GenerateJWT(*string) (string, error)
+	VerifyJWT(string, bool) (*jwt.Token, error)
+	ParseJWT(*jwt.Token) (string, error)
 }
 
 type Server interface {
@@ -26,7 +31,7 @@ type Server interface {
 }
 
 type transport interface {
-	handler(ctx *gin.Context)
+	Handler(ctx *gin.Context)
 }
 
 type server struct {
@@ -68,11 +73,15 @@ func (s *server) GetServer() *http.Server {
 }
 
 func (s *server) configureRouter() {
-	//s.router.Use(cors.New(cors.Config{
-	//	AllowOrigins: []string{"*"},
-	//}))
+	s.router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"POST", "GET", "OPTIONS", "DELETE", "PATCH"},
+		AllowHeaders:  []string{"Origin", "Accept", "Authorization", "Content-Type", "Accept-Encoding"},
+		ExposeHeaders: []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers"},
+		MaxAge:        12 * time.Hour,
+	}))
 
-	s.router.Use(cors.Default())
+	//s.router.Use(cors.Default())
 
 	//test
 	s.router.GET("/ping", func(c *gin.Context) {
@@ -84,45 +93,59 @@ func (s *server) configureRouter() {
 	// init transports
 	add := &addTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "create").Logger(),
+		log: s.logger.With().Str("transport", "docs/create").Logger(),
 	}
 	upd := &updTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "update").Logger(),
+		log: s.logger.With().Str("transport", "docs/update").Logger(),
 	}
 
 	get := &getTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "get all/id").Logger(),
+		log: s.logger.With().Str("transport", "docs/all_ID").Logger(),
 	}
 
 	download := &getDownloadFileTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "get file").Logger(),
+		log: s.logger.With().Str("transport", "docs/downloadFile").Logger(),
 	}
 
-	sps := &getCatTransport{
+	sps := &getCategoryTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "get list categories/distributors").Logger(),
+		log: s.logger.With().Str("transport", "docs/categories").Logger(),
 	}
 
 	del := &delTransport{
 		svc: s.svc,
-		log: s.logger.With().Str("transport", "delete by id").Logger(),
+		log: s.logger.With().Str("transport", "docs/deleteID").Logger(),
 	}
 
-	api := s.router.Group("api/docs")
-	api.GET("/", s.middleware(get))
-	api.GET("/:id", s.middleware(get))
-	api.GET("/sps", s.middleware(sps))
-	api.GET("/download/:id", s.middleware(download))
-	api.POST("/add", s.middleware(add))
-	api.PATCH("/update/:id", s.middleware(upd))
-	api.DELETE("/delete/:id", s.middleware(del))
+	login := &loginTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "auth/login").Logger(),
+	}
+	refresh := &refreshTransport{
+		svc: s.svc,
+		log: s.logger.With().Str("transport", "auth/refresh token").Logger(),
+	}
+
+	apiV1 := s.router.Group("apiV1/docs")
+	apiV1.GET("/", s.middleware(get))
+	apiV1.GET("/:id", s.middleware(get))
+	apiV1.GET("/sps", s.middleware(sps))
+	apiV1.POST("/download/:id", s.middleware(download))
+	apiV1.POST("/add", s.middleware(add))
+	apiV1.POST("/update/:id", s.middleware(upd))
+	apiV1.DELETE("/delete/:id", s.middleware(del))
+
+	apiV2 := s.router.Group("apiV2/auth")
+	apiV2.POST("/login", s.middleware(login))
+	apiV2.POST("/refresh", s.middleware(refresh))
+
 }
 
 func (s *server) middleware(tr transport) func(*gin.Context) {
 	return func(ctx *gin.Context) {
-		tr.handler(ctx)
+		tr.Handler(ctx)
 	}
 }

@@ -77,7 +77,7 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 			PostgresOperationTimeout: s.cfg.Postgres.OperationTimeout,
 			PostgresMaxConns:         s.cfg.Postgres.MaxConns,
 		},
-		s.baseLogger.With().Str("component", "postgres db").Logger())
+		s.baseLogger.With().Str("component", "postgres_db").Logger())
 	if err != nil {
 		return err
 	}

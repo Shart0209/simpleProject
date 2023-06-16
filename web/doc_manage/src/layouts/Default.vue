@@ -11,8 +11,8 @@ import Footer from '@/components/Footer.vue'
   <main>
     <section class="pt-4 pb-0">
       <div class="container">
-        <div class="row">
-          <router-view />
+        <div class="row justify-content-center">
+            <router-view />
         </div>
       </div>
     </section>

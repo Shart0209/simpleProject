@@ -12,9 +12,9 @@ type getTransport struct {
 	log zerolog.Logger
 }
 
-func (t *getTransport) handler(ctx *gin.Context) {
+func (t *getTransport) Handler(ctx *gin.Context) {
 
-	// get by id document /documents/:id
+	// get by ID document http://apiV1/docs/:id
 	if id := ctx.Param("id"); id != "" {
 		idx, err := strconv.ParseUint(id, 10, 64)
 		if err != nil {
@@ -25,7 +25,7 @@ func (t *getTransport) handler(ctx *gin.Context) {
 
 		data, err := t.svc.GetByID(idx)
 		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+			ctx.AbortWithStatusJSON(http.StatusNotFound, Response{Error: err.Error()})
 			return
 		}
 		ctx.JSON(http.StatusOK, Response{Data: data})
@@ -36,7 +36,7 @@ func (t *getTransport) handler(ctx *gin.Context) {
 	data, err := t.svc.GetAll()
 	if err != nil {
 		t.log.Fatal().Err(err).Msg("errors get all documents")
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "errors not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, Response{Error: "errors not found"})
 		return
 	}
 	ctx.JSON(http.StatusOK, Response{Data: data})
