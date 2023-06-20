@@ -20,12 +20,14 @@ const authStore = useAuthStore();
                         </li>
                     </ul>
                     <ul class="navbar-nav fs-4">
-                        <li v-if="authStore.user" class="nav-item ">
+
+                        
+                        <li v-if="authStore.user.isActive" class="nav-item ">
                             <a @click="authStore.logout()" class="nav-link" href="#">
                                 <i class="bi bi-door-open-fill"></i>
                             </a>
                         </li>
-                        <li v-else="authStore.user" class="nav-item">
+                        <li v-else class="nav-item">
                             <router-link class="nav-link" to="/login">
                                 <i class="bi bi-person-circle"></i>
                             </router-link>

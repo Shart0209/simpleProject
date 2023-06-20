@@ -1,23 +1,31 @@
 <script setup>
-import { ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import Card from '@/components/Card.vue';
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
 
-const username = ref('')
-const password = ref('')
+import Card from '@/components/Card.vue';
+
+const username = ref('');
+const password = ref('');
 
 const { error } = storeToRefs(useAuthStore());
 const { login } = useAuthStore();
 
+const router = useRouter();
+
 async function onSubmitLogin() {
-    await login(username, password)
+    login(username, password);
+}
+
+async function onClose() {
+    router.push({ name: 'board', replace: true });
 }
 
 </script>
 
 <template>
-    <div class="col-sm-4">
+    <div class="col-sm-4 pt-5">
         <Card>
             <template #header>
                 Аутентификация
@@ -42,7 +50,10 @@ async function onSubmitLogin() {
                 </form>
             </template>
             <template #footer>
-                <button type="button" class="btn btn-primary mx-2" @click="onSubmitLogin">Войти</button>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
+                    <button type="submit" class="btn btn-primary" @click="onSubmitLogin">OK</button>
+                    <button type="button" class="btn btn-primary" @click="onClose">Close</button>
+                </div>
             </template>
         </Card>
         <div>

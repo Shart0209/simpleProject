@@ -21,6 +21,7 @@ func (s *service) GetAll() ([]*model.DocsAttrs, error) {
 	FROM commons
 	JOIN contracts USING (contract_id)
 	JOIN suppliers USING (supplier_id)
+    JOIN authors USING (author_id)
 	JOIN categories USING (category_id)
 	JOIN c_groups USING (c_groups_id)
 	ORDER BY contract_id DESC;`, constants.Repo.Colum)
@@ -32,6 +33,10 @@ func (s *service) GetAll() ([]*model.DocsAttrs, error) {
 	if err != nil {
 		s.logger.Error().Err(err).Send()
 		return nil, err
+	}
+
+	if data == nil {
+		return nil, fmt.Errorf("data is empty")
 	}
 
 	duration := time.Since(start)
@@ -48,6 +53,7 @@ func (s *service) GetByID(ID uint64) (*model.DocsAttrs, error) {
 
 	query := fmt.Sprintf(`SELECT %s 
 	FROM commons
+	JOIN authors USING (author_id)
 	JOIN contracts USING (contract_id)
 	JOIN suppliers USING (supplier_id)
 	JOIN categories USING (category_id)
@@ -137,7 +143,7 @@ func (s *service) Create(bindForm *model.BindForm) error {
 	RETURNING contract_id
 	)
 	INSERT INTO commons
-	SELECT contract_id, $9, $10, $11, 1 from new_contract`
+	SELECT contract_id, $9, $10, $11, $12 from new_contract`
 	err := s.store.repo.InsertOne(nil, query,
 		bindForm.Docs.Title,
 		bindForm.Docs.Number,
@@ -147,9 +153,10 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		bindForm.Docs.EndDate,
 		bindForm.Docs.Description,
 		jsonFiles,
-		bindForm.Docs.Supplier,
-		bindForm.Docs.Category,
-		bindForm.Docs.Group,
+		bindForm.Docs.SupplierID,
+		bindForm.Docs.CategoryID,
+		bindForm.Docs.GroupsID,
+		bindForm.Docs.AuthorID,
 	)
 	if err != nil {
 		s.logger.Error().Err(err).Send()

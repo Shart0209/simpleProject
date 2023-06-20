@@ -25,10 +25,16 @@ CREATE TABLE categories
     CONSTRAINT pk_category_id PRIMARY KEY (category_id)
 );
 
+CREATE TYPE role AS ENUM ('admin', 'user');
+
 CREATE TABLE authors
 (
     author_id integer GENERATED ALWAYS AS IDENTITY,
-    name      varchar(100) NOT NULL,
+    login     varchar(50) UNIQUE NOT NULL,
+    name      varchar(50)        NOT NULL,
+    role      role               NOT NULL,
+    pswd_hash varchar            NOT NULL,
+    email     varchar(50)        NOT NULL,
 
     CONSTRAINT pk_author_id PRIMARY KEY (author_id)
 );
@@ -51,23 +57,13 @@ CREATE TABLE contracts
     CONSTRAINT chk_contracts_date CHECK (date <= start_date )
 );
 
-INSERT INTO c_groups
-VALUES (DEFAULT, 'Интернет'),
-       (DEFAULT, 'Мобильный интернет'),
-       (DEFAULT, 'Спутниковый интернет'),
-       (DEFAULT, 'Стационарная телефонная связь'),
-       (DEFAULT, 'Мобильная телефонная связь'),
-       (DEFAULT, 'Гранд-смета'),
-       (DEFAULT, 'Техническое обслуживание оргтехники'),
-       (DEFAULT, 'Утилизация оргтехники');
-
 CREATE TABLE commons
 (
     contract_id integer                NOT NULL,
     supplier_id integer                NOT NULL,
     category_id integer                NOT NULL,
     c_groups_id integer                NOT NULL,
-    author_id   integer,
+    author_id   integer                NOT NULL,
     status      boolean   DEFAULT true NOT NULL,
     created_at  timestamp DEFAULT (now()),
     updated_at  timestamp DEFAULT (now()),
@@ -79,6 +75,15 @@ CREATE TABLE commons
     CONSTRAINT fk_commons_authors FOREIGN KEY (author_id) REFERENCES authors
 );
 
+INSERT INTO c_groups
+VALUES (DEFAULT, 'Интернет'),
+       (DEFAULT, 'Мобильный интернет'),
+       (DEFAULT, 'Спутниковый интернет'),
+       (DEFAULT, 'Стационарная телефонная связь'),
+       (DEFAULT, 'Мобильная телефонная связь'),
+       (DEFAULT, 'Гранд-смета'),
+       (DEFAULT, 'Техническое обслуживание оргтехники'),
+       (DEFAULT, 'Утилизация оргтехники');
 
 INSERT INTO categories
 VALUES (DEFAULT, 'Открытый конкурс'),

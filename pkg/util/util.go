@@ -1,6 +1,7 @@
 package util
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"github.com/google/uuid"
 	"io"
@@ -93,4 +94,10 @@ func ReplaceNameFolder(str *string) string {
 	res := re.ReplaceAllString(*str, "-")
 	res = strings.ToUpper(fmt.Sprintf("ГК № %s", res))
 	return res
+}
+
+func GetHash(str *string) string {
+	h := sha256.New()
+	h.Write([]byte(*str))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

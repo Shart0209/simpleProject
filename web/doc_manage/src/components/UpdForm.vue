@@ -114,7 +114,7 @@ function onChangeFile(e) {
       </div>
     </form>
     <div v-show="error">
-      <p>{{ error }}</p>
+      <span>{{ error }}</span>
     </div>
   </div>
 </template>

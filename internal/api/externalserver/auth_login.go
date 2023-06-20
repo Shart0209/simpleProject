@@ -4,20 +4,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"net/http"
+	"simpleProject/pkg/model"
 	"strings"
 )
 
-type loginTransport struct {
+type authTransport struct {
 	svc Service
 	log zerolog.Logger
 }
 
-func (t *loginTransport) Handler(ctx *gin.Context) {
-	var loginForm LoginRequest
+func (t *authTransport) Handler(ctx *gin.Context) {
+	var loginForm model.LoginRequest
 
 	if err := ctx.ShouldBind(&loginForm); err != nil {
 		t.log.Error().Err(err).Send()
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "Login or password incorrect"})
 		return
 	}
 
@@ -28,13 +29,14 @@ func (t *loginTransport) Handler(ctx *gin.Context) {
 		return
 	}
 
-	// TEST: Check for username and password match, usually from a database
-	if err := testCheckAuth(loginForm.Login, loginForm.Password); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, Response{Error: "Authentication failed"})
+	// Check for username and password match, usually from a database
+	data, err := t.svc.CheckAuthLogin(&loginForm)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, Response{Error: err.Error()})
 		return
 	}
 
-	token, err := t.svc.GenerateJWT(&loginForm.Login)
+	token, err := t.svc.GenerateJWT(data)
 	if err != nil {
 		t.log.Error().Err(err).Send()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "Generate JWT failed"})

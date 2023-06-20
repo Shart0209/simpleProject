@@ -31,6 +31,25 @@ async function downloadItem(fileID, fileName) {
     downloadFile(id.value, fileID, fileName);
 }
 
+async function updateItem() {
+
+let newItem = {};
+for (let key in updItem.data) {
+
+    if (updItem.data[key] != item.value.data[key]) {
+        if (key === 'files' && updItem.data.files.length === 0) {
+            continue;
+        } else if (key === 'category' || key === 'supplier' || key === 'group') {
+            newItem[key] = updItem.data[key].id;
+        } else {
+            newItem[key] = updItem.data[key];
+        }
+    }
+}
+
+update(newItem, id.value);
+}
+
 async function updateForm() {
 
     hidden.value = !hidden.value;
@@ -45,23 +64,8 @@ async function updateForm() {
     delete updItem.data.update_at;
 }
 
-async function updateItem() {
-
-    let newItem = {};
-    for (let key in updItem.data) {
-
-        if (updItem.data[key] != item.value.data[key]) {
-            if (key === 'files' && updItem.data.files.length === 0) {
-                continue;
-            } else if (key === 'category' || key === 'supplier' || key === 'group') {
-                newItem[key] = updItem.data[key].id;
-            } else {
-                newItem[key] = updItem.data[key];
-            }
-        }
-    }
-
-    update(newItem, id.value);
+async function refreshForm() { 
+    getByIDDoc(id.value);
 }
 
 </script>
@@ -71,8 +75,11 @@ async function updateItem() {
         <div v-if="!item.error">
             <div v-show="!hidden">
                 <div v-show="authStore.user" class="col-sm-6 mb-3">
-                    <button type="button" class="btn btn-primary" @click="updateForm">Редактировать</button>
-                    <button type="button" class="btn btn-primary mx-2" @click="deleteItem">Удалить</button>
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="button" class="btn btn-primary" @click="updateForm">Редактировать</button>
+                        <button type="button" class="btn btn-primary" @click="refreshForm">Обновить</button>
+                        <button type="button" class="btn btn-primary" @click="deleteItem">Удалить</button>
+                    </div>
                 </div>
                 <Card>
                     <template #header>
@@ -138,17 +145,21 @@ async function updateItem() {
                         </ul>
                     </template>
                     <template #footer>
-                        <div class="d-inline">Дата создания: {{ formatDate(item.data.created_at, 'ru') }} г.</div>
-                        <div class="mx-2 d-inline" v-if="!item.data.hidden_at === '01.01.1'">обновлено: {{
-                            formatDate(item.data.hidden_at, 'ru') }}</div>
+                        <div class="d-grid gap-2 d-md-flex">
+                            <div class="d-inline">Дата создания: {{ formatDate(item.data.created_at, 'ru') }} г.</div>
+                            <div class="d-inline" v-if="!item.data.hidden_at === '01.01.1'">обновлено: {{
+                                formatDate(item.data.hidden_at, 'ru') }}
+                            </div>
+                            <div class="d-inline">Автор: {{ item.data.author }}</div>
+                        </div>
                     </template>
                 </Card>
                 <p v-if="error">{{ error }}</p>
             </div>
         </div>
         <div v-else>
-            <p>Ооопс данные не найдены.</p>
+            <span>Ооопс данные не найдены.</span>
         </div>
     </div>
     <UpdForm v-show="hidden" @close="hidden = false" @ok="updateItem" :updItem="updItem.data" />
-</template>
+</template> 

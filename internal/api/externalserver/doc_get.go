@@ -35,8 +35,8 @@ func (t *getTransport) Handler(ctx *gin.Context) {
 	// get all documents /documents
 	data, err := t.svc.GetAll()
 	if err != nil {
-		t.log.Fatal().Err(err).Msg("errors get all documents")
-		ctx.AbortWithStatusJSON(http.StatusNotFound, Response{Error: "errors not found"})
+		t.log.Error().Err(err).Msg("errors get all documents")
+		ctx.AbortWithStatusJSON(http.StatusNotFound, Response{Error: err.Error()})
 		return
 	}
 	ctx.JSON(http.StatusOK, Response{Data: data})

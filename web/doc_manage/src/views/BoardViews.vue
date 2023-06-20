@@ -13,12 +13,16 @@ const { items } = storeToRefs(useDocsStore());
 
 const router = useRouter();
 
-function createForm() {
+async function createForm() {
   // redirect to create page
   router.push({ name: 'add', replace: true });
 }
 
-getAllDocs()
+async function refreshForm() {
+  getAllDocs();
+}
+
+getAllDocs();
 
 </script>
 
@@ -26,7 +30,10 @@ getAllDocs()
   <section>
     <!-- Component Board -->
     <div class="col-md-10 offset-md-1">
-      <button v-show="authStore.user" @click="createForm" type="button" class="btn btn-primary mb-3">Create</button>
+      <div class="d-grid gap-2 d-md-flex mb-3">
+        <button v-show="authStore.user.isActive" @click="createForm" type="button" class="btn btn-primary">Create</button>
+        <button type="button" class="btn btn-primary" @click="refreshForm">Обновить</button>
+      </div>
       <Board :items="items.data" />
     </div>
   </section>

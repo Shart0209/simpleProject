@@ -19,9 +19,11 @@ type Service interface {
 	Delete(uint64) error
 	GetSps() (*model.Sps, error)
 	GetFilePath(string, string) (string, error)
-	GenerateJWT(*string) (string, error)
+	GenerateJWT(*model.Auth) (string, error)
 	VerifyJWT(string, bool) (*jwt.Token, error)
-	ParseJWT(*jwt.Token) (string, error)
+	ParseJWT(*jwt.Token) (jwt.MapClaims, error)
+	CheckAuthLogin(*model.LoginRequest) (*model.Auth, error)
+	CheckAuthRefresh(jwt.MapClaims) (*model.Auth, error)
 }
 
 type Server interface {
@@ -75,7 +77,7 @@ func (s *server) GetServer() *http.Server {
 func (s *server) configureRouter() {
 	s.router.Use(cors.New(cors.Config{
 		AllowOrigins:  []string{"*"},
-		AllowMethods:  []string{"POST", "GET", "OPTIONS", "DELETE", "PATCH"},
+		AllowMethods:  []string{"POST", "GET", "OPTIONS", "DELETE"},
 		AllowHeaders:  []string{"Origin", "Accept", "Authorization", "Content-Type", "Accept-Encoding"},
 		ExposeHeaders: []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers"},
 		MaxAge:        12 * time.Hour,
@@ -120,7 +122,7 @@ func (s *server) configureRouter() {
 		log: s.logger.With().Str("transport", "docs/deleteID").Logger(),
 	}
 
-	login := &loginTransport{
+	authorize := &authTransport{
 		svc: s.svc,
 		log: s.logger.With().Str("transport", "auth/login").Logger(),
 	}
@@ -139,7 +141,7 @@ func (s *server) configureRouter() {
 	apiV1.DELETE("/delete/:id", s.middleware(del))
 
 	apiV2 := s.router.Group("apiV2/auth")
-	apiV2.POST("/login", s.middleware(login))
+	apiV2.POST("/login", s.middleware(authorize))
 	apiV2.POST("/refresh", s.middleware(refresh))
 
 }

@@ -29,7 +29,6 @@ func (t *delTransport) Handler(ctx *gin.Context) {
 
 	err = t.svc.Delete(idx)
 	if err != nil {
-
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: fmt.Sprintf("bad request by ID {%s} not found", id)})
 		return
 	}

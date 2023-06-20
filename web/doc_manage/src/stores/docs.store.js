@@ -33,15 +33,16 @@ export const useDocsStore = defineStore('docs', () => {
     return (initialAttrs = {
       title: '',
       number: '',
+      price: '',
       date: '',
       start_date: '',
       end_date: '',
+      description: '',
       category: '',
       supplier: '',
-      group: '',
-      description: '',
-      price: '',
       status: true,
+      group: '',
+      author: '',
     });
   }
 
@@ -230,7 +231,7 @@ export const useDocsStore = defineStore('docs', () => {
       if (!response.ok) {
         let result = await response.json();
 
-        if (result.errors === 'timing is everything') {
+        if (result.errors === 'token has invalid claims: token is expired') {
           refreshToken();
         } else if (result.errors === 'token is empty') {
           throw new Error('Вы не авторизованы');

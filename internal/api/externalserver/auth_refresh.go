@@ -16,23 +16,22 @@ func (t *refreshTransport) Handler(ctx *gin.Context) {
 	token, err := t.svc.VerifyJWT(oldToken, true)
 	if err != nil {
 		t.log.Error().Err(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
-		return
 	}
 
-	login, err := t.svc.ParseJWT(token)
+	data, err := t.svc.ParseJWT(token)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "Parse JWT failed"})
 		return
 	}
 
-	// TEST: Check for username and password match, usually from a database
-	if login != "test" {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "JWT login failed"})
+	// Check for username and password match, usually from a database
+	items, err := t.svc.CheckAuthRefresh(data)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, Response{Error: err.Error()})
 		return
 	}
 
-	newToken, err := t.svc.GenerateJWT(&login)
+	newToken, err := t.svc.GenerateJWT(items)
 	if err != nil {
 		t.log.Error().Err(err).Send()
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: "Generate JWT failed"})

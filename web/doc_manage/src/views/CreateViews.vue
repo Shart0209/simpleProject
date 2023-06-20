@@ -53,8 +53,10 @@ function createForm() {
             formData.append("files", selectedFiles[key], selectedFiles[key].name);
         }
     }
+    
+    formData.set('author', authStore.user.id);
 
-    create(formData)
+    create(formData);
 }
 
 function closeForm() {
@@ -66,18 +68,20 @@ getOptionSelect();
 </script>
 
 <template>
-    <div v-if="authStore.user" class="col-md-6">
+    <div v-if="authStore.user.isActive" class="col-md-6">
         <h4 class="mb-2">Создание</h4>
         <form method="POST" class="was-validated" enctype="multipart/form-data" @submit.prevent>
             <div class="row g-3">
-                <div class="col-12 mb-2">
-                    <input type="text" class="form-control" maxlength="100" v-model.trim="attrs.title" placeholder="Наименование" required>
+                <div class="col-12">
+                    <input type="text" class="form-control" maxlength="100" v-model.trim="attrs.title"
+                        placeholder="Наименование" required>
                     <div class="invalid-feedback">
                         Valid title is required.
                     </div>
                 </div>
                 <div class="col-sm-6">
-                    <input type="text" class="form-control" maxlength="50" v-model.trim="attrs.number" placeholder="Номер" required>
+                    <input type="text" class="form-control" maxlength="50" v-model.trim="attrs.number" placeholder="Номер"
+                        required>
                     <div class="invalid-feedback">
                         Valid number is required.
                     </div>
@@ -90,21 +94,21 @@ getOptionSelect();
                     </div>
                 </div>
 
-                <div class="col-sm-4 mb-2">
+                <div class="col-sm-4">
                     <label>Дата заключения</label>
                     <input type="date" class="form-control" v-model="attrs.date" required>
                     <div class="invalid-feedback">
                         Valid date is required.
                     </div>
                 </div>
-                <div class="col-sm-4 mb-2">
+                <div class="col-sm-4">
                     <label>Дата начала действия</label>
                     <input type="date" class="form-control" v-model="attrs.start_date" required>
                     <div class="invalid-feedback">
                         Valid date is required.
                     </div>
                 </div>
-                <div class="col-sm-4 mb-2">
+                <div class="col-sm-4">
                     <label>Дата окончания действия</label>
                     <input type="date" class="form-control" v-model="attrs.end_date" required>
                     <div class="invalid-feedback">
@@ -115,23 +119,21 @@ getOptionSelect();
                     <select class="form-floating form-select" @change="onChangeCategory($event)" required>
                         <option disabled selected value="">Способ заключения</option>
                         <option v-for="item in optionsSelect.categories" :key=item.id :value="item.id">
-                        {{ item.name }}
+                            {{ item.name }}
                         </option>
                     </select>
                 </div>
                 <div class="col-sm-6">
                     <select class="form-floating form-select" @change="onChangeGroup($event)" required>
                         <option disabled selected value="">Группа</option>
-                        <option v-for="item in optionsSelect.groups" :key=item.id
-                            :value="item.id">{{ item.name }}
+                        <option v-for="item in optionsSelect.groups" :key=item.id :value="item.id">{{ item.name }}
                         </option>
                     </select>
                 </div>
                 <div class="col-sm-12">
                     <select class="form-floating form-select" @change="onChangeSupplier($event)" required>
                         <option disabled selected value="">Поставщик</option>
-                        <option v-for="item in optionsSelect.suppliers" :key=item.id
-                            :value="item.id">{{ item.name }}
+                        <option v-for="item in optionsSelect.suppliers" :key=item.id :value="item.id">{{ item.name }}
                         </option>
                     </select>
                 </div>
@@ -143,7 +145,7 @@ getOptionSelect();
                     <input type="file" @change="onChangeFile($event)" ref="file" class="form-control" multiple>
                 </div>
             </div>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-2">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                 <button type="submit" class="btn btn-primary" @click="createForm">OK</button>
                 <button type="button" class="btn btn-primary" @click="closeForm">Close</button>
             </div>
