@@ -128,10 +128,8 @@ func (s *service) Create(bindForm *model.BindForm) error {
 		for _, item := range data {
 			res = append(res, item.File)
 		}
-		attr := make(map[string]interface{}, 1)
-		attr["attr"] = res
 
-		jsonFiles, err = json.Marshal(attr)
+		jsonFiles, err = json.Marshal(res)
 		if err != nil {
 			return err
 		}
@@ -160,11 +158,9 @@ func (s *service) Create(bindForm *model.BindForm) error {
 	)
 	if err != nil {
 		s.logger.Error().Err(err).Send()
-
 		if err := util.DeleteFile(&folderPath); err != nil {
 			return fmt.Errorf("failed to create and delete folder")
 		}
-
 		return fmt.Errorf("failed to create")
 	}
 
@@ -181,32 +177,34 @@ func (s *service) Create(bindForm *model.BindForm) error {
 	return nil
 }
 
-func (s *service) Update(res map[string]interface{}, ID uint64) error {
+func (s *service) Update(bindForm *model.BindForm) error {
 
-	var str1 string
+	oldItem, err := s.GetByID(uint64(bindForm.Docs.ID))
+	if err != nil {
+		return err
+	}
 
-	//if res["title"] !=
+	if oldItem.Number != bindForm.Docs.Number {
+		newRes := util.ReplaceNameFolder(&bindForm.Docs.Number)
+		newFolderPath := filepath.Join(s.cfg.FilesFolder, newRes)
 
-	//if res.title != "" {
-	//	str1 += fmt.Sprintf("title=%v, ", res.Title)
-	//} else if res.Number != "" {
-	//	str1 += fmt.Sprintf("numb=%v, ", res.Number)
-	//} else if res.Price != 0 {
-	//	str1 += fmt.Sprintf("price=%v, ", res.Price)
-	//} else if res.Description != "" {
-	//	str1 += fmt.Sprintf("description=%v, ", res.Description)
-	//} else if res.Date != time.Date("0001-01-01 00:00:00 +0000") {
-	//	str1 += fmt.Sprintf("date=%v, ", res.Date)
-	//} else if res.Start_date != "0001-01-01 00:00:00 +0000" {
-	//	str1 += fmt.Sprintf("start_date=%v, ", res.Start_date)
-	//} else if res.End_date != "0001-01-01 00:00:00 +0000" {
-	//	str1 += fmt.Sprintf("end_date=%v, ", res.End_date)
-	//}
+		oldRes := util.ReplaceNameFolder(&oldItem.Number)
+		oldFolderPath := filepath.Join(s.cfg.FilesFolder, oldRes)
+		err := util.RenameFolder(&oldFolderPath, &newFolderPath)
+		if err != nil {
+			return err
+		}
+		var items []map[string]string
+		oldItem.AttrFiles
+		//var tmp []map[string]interface{}
+		//coutnFilesToJson := json.Unmarshal(oldItem.AttrFiles, &tmp)
+		//query := `UPDATE contracts
+		//		SET files=jsonb_set(files, '{$1, path}', '"$2"', false)
+		//		WHERE contract_id=$3`
 
-	_ = res
-	//str += fmt.Sprintf("%s=%v, ", key, val)
+		//err := s.store.repo.InsertOne(nil, query)
+	}
 
-	_ = str1
 	//query := `WITH upd_contract as (
 	//UPDATE contracts
 	//SET title='blablabla', numb='12345-576'

@@ -12,7 +12,7 @@ export const useDocsStore = defineStore('docs', () => {
     data: [],
   });
   let item = reactive({
-    data: null,
+    data: {},
   });
   const error = ref({});
   const optionsSelect = reactive({});
@@ -180,18 +180,20 @@ export const useDocsStore = defineStore('docs', () => {
     router.push({ name: 'board', replace: true });
   }
 
-  async function update(newItem, id) {
+  function viewFormData(form) {
+    for(let [name, value] of form) {
+      console.log(`${name} = ${value}`);
+    }
+  }
+  
+  async function update(form, id) {
     error.value = null;
-
+    viewFormData(form)
     try {
-      if (Object.keys(newItem).length == 0) {
-        throw new Error('Данные для изменения не найдены');
-      }
-
       let response = await fetch(`${baseURL}/update/${id}`, {
         method: 'POST',
         headers: authHeader(),
-        body: JSON.stringify(newItem),
+        body: form,
       });
 
       if (response.ok) {

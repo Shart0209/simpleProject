@@ -14,6 +14,20 @@ import (
 	"strings"
 )
 
+func RenameFolder(oldPath, newPath *string) error {
+
+	_, err := os.Stat(*oldPath)
+	if err != nil && os.IsNotExist(err) {
+		return err
+	}
+
+	err = os.Rename(*oldPath, *newPath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func CreateFolder(path *string) error {
 
 	_, err := os.Stat(*path)

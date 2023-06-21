@@ -16,6 +16,7 @@ const { getByIDDoc, deleteByID, downloadFile, formatDate, update } = useDocsStor
 const route = useRoute();
 const id = computed(() => route.params.id);
 
+
 const hidden = ref(false);
 const updItem = reactive({
     data: {}
@@ -32,26 +33,6 @@ async function downloadItem(fileID, fileName) {
 }
 
 async function updateItem() {
-
-let newItem = {};
-for (let key in updItem.data) {
-
-    if (updItem.data[key] != item.value.data[key]) {
-        if (key === 'files' && updItem.data.files.length === 0) {
-            continue;
-        } else if (key === 'category' || key === 'supplier' || key === 'group') {
-            newItem[key] = updItem.data[key].id;
-        } else {
-            newItem[key] = updItem.data[key];
-        }
-    }
-}
-
-update(newItem, id.value);
-}
-
-async function updateForm() {
-
     hidden.value = !hidden.value;
 
     updItem.data = {};
@@ -59,12 +40,30 @@ async function updateForm() {
     // Copy obj
     Object.assign(updItem.data, item.value.data);
 
-    updItem.data.files = [];
+    updItem.data.files = undefined;
     delete updItem.data.created_at;
     delete updItem.data.update_at;
 }
 
-async function refreshForm() { 
+async function updateForm() {
+    let formData = new FormData();
+
+    for (let key in updItem.data) {
+        if (key === 'category' || key === 'group' || key === 'supplier') {
+            formData.set(key, updItem.data[key].id)
+        } else {
+            formData.append(key, updItem.data[key]);
+        }
+    }
+    if (updItem.data.files === undefined) {
+        formData.delete('files')
+    }
+    formData.delete('author')
+    update(formData, id.value);
+
+}
+
+async function refreshForm() {
     getByIDDoc(id.value);
 }
 
@@ -75,8 +74,8 @@ async function refreshForm() {
         <div v-if="!item.error">
             <div v-show="!hidden">
                 <div v-show="authStore.user" class="col-sm-6 mb-3">
-                    <div class="d-grid gap-2 d-md-flex">
-                        <button type="button" class="btn btn-primary" @click="updateForm">Редактировать</button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary" @click="updateItem">Редактировать</button>
                         <button type="button" class="btn btn-primary" @click="refreshForm">Обновить</button>
                         <button type="button" class="btn btn-primary" @click="deleteItem">Удалить</button>
                     </div>
@@ -127,10 +126,10 @@ async function refreshForm() {
                         <ul class="list-unstyled mb-0" v-if="item.data.files">
                             <li>
                                 <div class="fw-bold d-inline">Прикрепленные файлы: </div>
-                                <sup><small class="badge rounded-pill bg-info me-1">{{ item.data.files.attr.length
+                                <sup><small class="badge rounded-pill bg-info me-1">{{ item.data.files.length
                                 }}</small></sup>
                             </li>
-                            <li v-for="fl in item.data.files.attr" :key="item.data.name">
+                            <li v-for="fl in item.data.files" :key="item.data.files.name">
                                 <ul>
                                     <li class="d-flex justify-content-start">
                                         {{ fl.name }}
@@ -161,5 +160,5 @@ async function refreshForm() {
             <span>Ооопс данные не найдены.</span>
         </div>
     </div>
-    <UpdForm v-show="hidden" @close="hidden = false" @ok="updateItem" :updItem="updItem.data" />
+    <UpdForm v-show="hidden" @close="hidden = false" @ok="updateForm" :updItem="updItem.data" />
 </template> 

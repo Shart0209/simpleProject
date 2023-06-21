@@ -15,7 +15,7 @@ type Service interface {
 	GetAll() ([]*model.DocsAttrs, error)
 	GetByID(uint64) (*model.DocsAttrs, error)
 	Create(*model.BindForm) error
-	Update(map[string]interface{}, uint64) error
+	Update(*model.BindForm) error
 	Delete(uint64) error
 	GetSps() (*model.Sps, error)
 	GetFilePath(string, string) (string, error)

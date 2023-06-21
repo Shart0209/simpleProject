@@ -13,7 +13,7 @@ const authStore = useAuthStore();
 
 const init = getInitials()
 const attrs = reactive({ ...init });
-let selectedFiles = reactive([])
+let selectedFiles = reactive([]);
 
 const router = useRouter();
 

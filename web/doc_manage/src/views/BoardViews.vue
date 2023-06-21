@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { getAllDocs } = useDocsStore();
-const { items } = storeToRefs(useDocsStore());
+const { items, optionsSelect } = storeToRefs(useDocsStore());
 
 const router = useRouter();
 
@@ -30,9 +30,29 @@ getAllDocs();
   <section>
     <!-- Component Board -->
     <div class="col-md-10 offset-md-1">
-      <div class="d-grid gap-2 d-md-flex mb-3">
-        <button v-show="authStore.user.isActive" @click="createForm" type="button" class="btn btn-primary">Create</button>
-        <button type="button" class="btn btn-primary" @click="refreshForm">Обновить</button>
+      <div class="row justify-content-between gy-5 mb-3">
+        <div class="col-sm-6 ">
+          <div class="btn-group" role="group">
+            <button v-show="authStore.user.isActive" @click="createForm" type="button"
+              class="btn btn-primary me-1">Create</button>
+            <button type="button" class="btn btn-primary" @click="refreshForm">Обновить</button>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <select class="form-floating form-select">
+            <option disabled selected value="">Способ заключения</option>
+            <option v-for="item in optionsSelect.categories" :key=item.id :value="item.id">
+              {{ item.name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-sm-3">
+          <select class="form-floating form-select">
+            <option disabled selected value="">Группа</option>
+            <option v-for="item in optionsSelect.groups" :key=item.id :value="item.id">{{ item.name }}
+            </option>
+          </select>
+        </div>
       </div>
       <Board :items="items.data" />
     </div>
