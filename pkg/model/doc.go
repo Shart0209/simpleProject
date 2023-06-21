@@ -18,22 +18,22 @@ type Files struct {
 }
 
 type DocsAttrs struct {
-	ID          int         `form:"id" json:"id" binding:"omitempty" db:"contract_id"`
-	Title       string      `form:"title" json:"title" binding:"required" db:"title"`
-	Number      string      `form:"number" json:"number" binding:"required" db:"numb"`
-	Price       float64     `form:"price" json:"price" binding:"required" db:"price"`
-	Date        time.Time   `form:"date" json:"date" binding:"required" time_format:"2006-01-02" db:"date"`
-	StartDate   time.Time   `form:"start_date" json:"start_date" binding:"required" time_format:"2006-01-02" db:"start_date"`
-	EndDate     time.Time   `form:"end_date" json:"end_date" binding:"required" time_format:"2006-01-02" db:"end_date"`
-	Description string      `form:"description" json:"description" binding:"omitempty" db:"description"`
-	Category    int         `form:"category" json:"category" binding:"required" db:"category"`
-	Supplier    int         `form:"supplier" json:"supplier" binding:"required" db:"suppliers"`
-	Status      bool        `form:"status" json:"status" binding:"required" db:"status"`
-	Group       int         `form:"group" json:"group" binding:"required" db:"сgroups"`
-	Author      string      `form:"author" json:"author" binding:"required" db:"author"`
-	CreatedAt   time.Time   `form:"created_at" json:"created_at" binding:"omitempty" db:"created_at"`
-	UpdateAt    time.Time   `form:"update_at" json:"update_at" binding:"omitempty" db:"update_at"`
-	AttrFiles   interface{} `json:"files" db:"files"`
+	ID          int                      `form:"id" json:"id" binding:"omitempty" db:"contract_id"`
+	Title       string                   `form:"title" json:"title" binding:"required" db:"title"`
+	Number      string                   `form:"number" json:"number" binding:"required" db:"numb"`
+	Price       float64                  `form:"price" json:"price" binding:"required" db:"price"`
+	Date        time.Time                `form:"date" json:"date" binding:"required" time_format:"2006-01-02" db:"date"`
+	StartDate   time.Time                `form:"start_date" json:"start_date" binding:"required" time_format:"2006-01-02" db:"start_date"`
+	EndDate     time.Time                `form:"end_date" json:"end_date" binding:"required" time_format:"2006-01-02" db:"end_date"`
+	Description string                   `form:"description" json:"description" binding:"omitempty" db:"description"`
+	Category    int                      `form:"category" json:"category" binding:"required" db:"category"`
+	Supplier    int                      `form:"supplier" json:"supplier" binding:"required" db:"suppliers"`
+	Status      bool                     `form:"status" json:"status" binding:"required" db:"status"`
+	Group       int                      `form:"group" json:"group" binding:"required" db:"сgroups"`
+	Author      string                   `form:"author" json:"author" binding:"required" db:"author"`
+	CreatedAt   time.Time                `form:"created_at" json:"created_at" binding:"omitempty" db:"created_at"`
+	UpdateAt    time.Time                `form:"update_at" json:"update_at" binding:"omitempty" db:"update_at"`
+	AttrFiles   []map[string]interface{} `json:"files" db:"files"`
 }
 
 type UpdDoc struct {

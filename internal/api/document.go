@@ -194,8 +194,9 @@ func (s *service) Update(bindForm *model.BindForm) error {
 		if err != nil {
 			return err
 		}
-		var items []map[string]string
-		oldItem.AttrFiles
+
+		tmp := len(oldItem.AttrFiles)
+		_ = tmp
 		//var tmp []map[string]interface{}
 		//coutnFilesToJson := json.Unmarshal(oldItem.AttrFiles, &tmp)
 		//query := `UPDATE contracts
