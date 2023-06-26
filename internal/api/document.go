@@ -184,37 +184,113 @@ func (s *service) Update(bindForm *model.BindForm) error {
 		return err
 	}
 
-	if oldItem.Number != bindForm.Docs.Number {
+	var jsonFiles []byte
+	var newBaseDir string
+	var query string
+	data := []model.Files{}
+
+	oldRes := util.ReplaceNameFolder(&oldItem.Number)
+	oldFolderPath := filepath.Join(s.cfg.FilesFolder, oldRes)
+
+	if oldItem.Number != bindForm.Docs.Number && bindForm.BindFiles == nil {
 		newRes := util.ReplaceNameFolder(&bindForm.Docs.Number)
 		newFolderPath := filepath.Join(s.cfg.FilesFolder, newRes)
-
-		oldRes := util.ReplaceNameFolder(&oldItem.Number)
-		oldFolderPath := filepath.Join(s.cfg.FilesFolder, oldRes)
-		err := util.RenameFolder(&oldFolderPath, &newFolderPath)
+		newBaseDir, err = filepath.Abs(newFolderPath)
 		if err != nil {
 			return err
 		}
 
-		tmp := len(oldItem.AttrFiles)
-		_ = tmp
-		//var tmp []map[string]interface{}
-		//coutnFilesToJson := json.Unmarshal(oldItem.AttrFiles, &tmp)
-		//query := `UPDATE contracts
-		//		SET files=jsonb_set(files, '{$1, path}', '"$2"', false)
-		//		WHERE contract_id=$3`
+		err = util.RenameFolder(&oldFolderPath, &newFolderPath)
+		if err != nil {
+			return err
+		}
 
-		//err := s.store.repo.InsertOne(nil, query)
+		for i := range oldItem.AttrFiles {
+			query := fmt.Sprintf(`UPDATE contracts SET files=jsonb_set(files, '{%v, path}', to_jsonb('%v'::TEXT), false)
+			WHERE contract_id=$1`, i, newBaseDir)
+			err := s.store.repo.InsertOne(nil, query, bindForm.Docs.ID)
+			if err != nil {
+				return nil
+			}
+		}
+	}
+	if len(bindForm.BindFiles) != 0 {
+
+		err := util.ParserBindForm(bindForm.BindFiles, newBaseDir, &data)
+		if err != nil {
+			return fmt.Errorf("failed to parse bind form")
+		}
+
+		var res []model.File
+		for _, item := range data {
+			res = append(res, item.File)
+		}
+
+		jsonFiles, err = json.Marshal(res)
+		if err != nil {
+			return err
+		}
+
+		// remove old files
+		for _, item := range oldItem.AttrFiles {
+			path := filepath.Join(item["path"].(string), item["id"].(string))
+			if _, err := os.Stat(path); err != nil {
+				if os.IsNotExist(err) {
+					fmt.Println("file does not exist")
+					return err
+				}
+			}
+			err := os.Remove(path)
+			if err != nil {
+				return err
+			}
+		}
+
+	} else {
+		query = `WITH upd_contract as (UPDATE contracts
+		SET title=$1,numb=$2,price=$3,date=$4,start_date=$5,end_date=$6,description=$7 
+		WHERE contract_id=$8
+		RETURNING contract_id as id
+		)
+		UPDATE commons
+		SET status=$9,supplier_id=$10,category_id=$11,c_groups_id=$12,updated_at=$13
+		WHERE contract_id=(SELECT id from upd_contract)`
 	}
 
-	//query := `WITH upd_contract as (
-	//UPDATE contracts
-	//SET title='blablabla', numb='12345-576'
-	//WHERE contract_id =3
-	//RETURNING contract_id as id
-	//)
-	//UPDATE commons
-	//SET status=false
-	//WHERE contract_id=(SELECT id from upd_contract)`
+	query = `WITH upd_contract as (UPDATE contracts
+	SET title=$1,numb=$2,price=$3,date=$4,start_date=$5,end_date=$6,description=$7, files=$8 
+	WHERE contract_id=$9
+	RETURNING contract_id as id
+	)
+	UPDATE commons
+	SET status=$10,supplier_id=$11,category_id=$12,c_groups_id=$13,updated_at=$14
+	WHERE contract_id=(SELECT id from upd_contract)`
+	err = s.store.repo.InsertOne(nil, query,
+		bindForm.Docs.Title,
+		bindForm.Docs.Number,
+		bindForm.Docs.Price,
+		bindForm.Docs.Date,
+		bindForm.Docs.StartDate,
+		bindForm.Docs.EndDate,
+		bindForm.Docs.Description,
+		jsonFiles,
+		bindForm.Docs.ID,
+		bindForm.Docs.Status,
+		bindForm.Docs.SupplierID,
+		bindForm.Docs.CategoryID,
+		bindForm.Docs.GroupsID,
+		time.Now(),
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range data {
+		if err := util.SaveUploadedFile(item.Files, &item.File.ID, &item.File.Path); err != nil {
+			s.logger.Error().Err(err).Send()
+			return fmt.Errorf("upload file err: %s", err.Error())
+		}
+	}
 
 	return nil
 }
@@ -265,7 +341,7 @@ func (s *service) GetFilePath(fileName string, ID string) (string, error) {
 	res := strings.Split(fileName, ".")[0]
 	idx := res[len(res)-1:]
 
-	query := fmt.Sprintf("SELECT files::json->'attr'->%s->'path' FROM contracts WHERE contract_id = %s", idx, ID)
+	query := fmt.Sprintf("SELECT files::json->%s->'path' FROM contracts WHERE contract_id = %s", idx, ID)
 
 	var data interface{}
 	err := s.store.repo.Get(&data, query, false)

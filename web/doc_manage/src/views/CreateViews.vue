@@ -69,7 +69,7 @@ getOptionSelect();
 
 <template>
     <div v-if="authStore.user.isActive" class="col-md-6">
-        <h4 class="mb-2">Создание</h4>
+        <h4 class="mb-2">Create</h4>
         <form method="POST" class="was-validated" enctype="multipart/form-data" @submit.prevent>
             <div class="row g-3">
                 <div class="col-12">

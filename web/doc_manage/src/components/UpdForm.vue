@@ -4,9 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useDocsStore } from '@/stores';
 
 const props = defineProps({
-  updItem: {
-    required: true
-  }
+  updItem: Array
 });
 
 const { optionsSelect, error } = storeToRefs(useDocsStore());
@@ -15,8 +13,9 @@ const checkedNames = computed(() => props.updItem.status === true ? 'Дейст�
 
 function onChangeFile(e) {
   if (e.target.files) {
+    props.updItem.files = [];
     for (let i = 0; i < e.target.files.length; i++) {
-      props.updItem.files.push(e.target.files[i])
+      props.updItem.files.push(e.target.files[i]);
     }
   }
 }
@@ -25,7 +24,7 @@ function onChangeFile(e) {
 
 <template>
   <div class="col-md-6">
-    <h4 class="mb-2">Редактирование </h4>
+    <h4 class="mb-2">Edit</h4>
     <form method="POST" class="was-validated" enctype="multipart/form-data" @submit.prevent>
       <div class="row g-3">
         <div class="col-12 mb-2">

@@ -181,24 +181,26 @@ export const useDocsStore = defineStore('docs', () => {
   }
 
   function viewFormData(form) {
-    for(let [name, value] of form) {
+    for (let [name, value] of form) {
       console.log(`${name} = ${value}`);
     }
   }
-  
+
   async function update(form, id) {
     error.value = null;
-    viewFormData(form)
+
     try {
       let response = await fetch(`${baseURL}/update/${id}`, {
         method: 'POST',
         headers: authHeader(),
         body: form,
       });
-
-      if (response.ok) {
-        router.push({ name: 'board', replace: true });
+      if (!response.ok) {
+        const message = `${result.errors} ${response.status}`;
+        throw new Error(message);
       }
+
+      router.push({ name: 'board', replace: true });
     } catch (err) {
       error.value = err;
       console.log(err);

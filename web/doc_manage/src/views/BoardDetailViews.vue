@@ -50,17 +50,22 @@ async function updateForm() {
 
     for (let key in updItem.data) {
         if (key === 'category' || key === 'group' || key === 'supplier') {
-            formData.set(key, updItem.data[key].id)
+            formData.set(key, updItem.data[key].id);
+        } else if (key === 'files') { 
+            for (let key in updItem.data.files) {
+            formData.append("files", updItem.data.files[key], updItem.data.files[key].name);
+        }
         } else {
             formData.append(key, updItem.data[key]);
         }
     }
     if (updItem.data.files === undefined) {
-        formData.delete('files')
+        formData.delete('files');
     }
-    formData.delete('author')
+    formData.delete('author');
+    formData.delete('update_at');
+    
     update(formData, id.value);
-
 }
 
 async function refreshForm() {
@@ -75,9 +80,9 @@ async function refreshForm() {
             <div v-show="!hidden">
                 <div v-show="authStore.user" class="col-sm-6 mb-3">
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary" @click="updateItem">Редактировать</button>
-                        <button type="button" class="btn btn-primary" @click="refreshForm">Обновить</button>
-                        <button type="button" class="btn btn-primary" @click="deleteItem">Удалить</button>
+                        <button type="button" class="btn btn-primary me-1" @click="updateItem">Edit</button>
+                        <button type="button" class="btn btn-primary me-1" @click="refreshForm">Refresh</button>
+                        <button type="button" class="btn btn-primary" @click="deleteItem">Delete</button>
                     </div>
                 </div>
                 <Card>
