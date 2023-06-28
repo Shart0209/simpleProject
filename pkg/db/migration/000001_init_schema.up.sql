@@ -42,7 +42,7 @@ CREATE TABLE authors
 CREATE TABLE contracts
 (
     contract_id integer GENERATED ALWAYS AS IDENTITY,
-    title       varchar(100) NOT NULL,
+    title       varchar(160) NOT NULL,
     numb        varchar(50)  NOT NULL,
     date        date         NOT NULL,
     price       float        NOT NULL,

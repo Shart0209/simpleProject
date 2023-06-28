@@ -24,7 +24,7 @@ func (s *service) GetAll() ([]*model.DocsAttrs, error) {
     JOIN authors USING (author_id)
 	JOIN categories USING (category_id)
 	JOIN c_groups USING (c_groups_id)
-	ORDER BY contract_id DESC;`, constants.Repo.Colum)
+	ORDER BY contract_id DESC;`, constants.Repo.Columns)
 
 	// TODO flag:
 	//	- true: get ScanAll
@@ -51,14 +51,14 @@ func (s *service) GetByID(ID uint64) (*model.DocsAttrs, error) {
 
 	var data model.DocsAttrs
 
-	query := fmt.Sprintf(`SELECT %s 
+	query := fmt.Sprintf(`SELECT %s, updated_at
 	FROM commons
 	JOIN authors USING (author_id)
 	JOIN contracts USING (contract_id)
 	JOIN suppliers USING (supplier_id)
 	JOIN categories USING (category_id)
 	JOIN c_groups USING (c_groups_id)
-	WHERE commons.contract_id=$1;`, constants.Repo.Colum)
+	WHERE commons.contract_id=$1;`, constants.Repo.Columns)
 
 	// TODO flag:
 	//	- true: get ScanAll
@@ -184,21 +184,19 @@ func (s *service) Update(bindForm *model.BindForm) error {
 		return err
 	}
 
-	var jsonFiles []byte
-	var newBaseDir string
 	var query string
-	data := []model.Files{}
 
 	oldRes := util.ReplaceNameFolder(&oldItem.Number)
 	oldFolderPath := filepath.Join(s.cfg.FilesFolder, oldRes)
 
+	newRes := util.ReplaceNameFolder(&bindForm.Docs.Number)
+	newFolderPath := filepath.Join(s.cfg.FilesFolder, newRes)
+	newBaseDir, err := filepath.Abs(newFolderPath)
+	if err != nil {
+		return err
+	}
+
 	if oldItem.Number != bindForm.Docs.Number && bindForm.BindFiles == nil {
-		newRes := util.ReplaceNameFolder(&bindForm.Docs.Number)
-		newFolderPath := filepath.Join(s.cfg.FilesFolder, newRes)
-		newBaseDir, err = filepath.Abs(newFolderPath)
-		if err != nil {
-			return err
-		}
 
 		err = util.RenameFolder(&oldFolderPath, &newFolderPath)
 		if err != nil {
@@ -215,7 +213,7 @@ func (s *service) Update(bindForm *model.BindForm) error {
 		}
 	}
 	if len(bindForm.BindFiles) != 0 {
-
+		data := []model.Files{}
 		err := util.ParserBindForm(bindForm.BindFiles, newBaseDir, &data)
 		if err != nil {
 			return fmt.Errorf("failed to parse bind form")
@@ -226,7 +224,7 @@ func (s *service) Update(bindForm *model.BindForm) error {
 			res = append(res, item.File)
 		}
 
-		jsonFiles, err = json.Marshal(res)
+		jsonFiles, err := json.Marshal(res)
 		if err != nil {
 			return err
 		}
@@ -246,6 +244,41 @@ func (s *service) Update(bindForm *model.BindForm) error {
 			}
 		}
 
+		query = `WITH upd_contract as (UPDATE contracts
+		SET title=$1,numb=$2,price=$3,date=$4,start_date=$5,end_date=$6,description=$7, files=$8 
+		WHERE contract_id=$9
+		RETURNING contract_id as id
+		)
+		UPDATE commons
+		SET status=$10,supplier_id=$11,category_id=$12,c_groups_id=$13,updated_at=$14
+		WHERE contract_id=(SELECT id from upd_contract)`
+		err = s.store.repo.InsertOne(nil, query,
+			bindForm.Docs.Title,
+			bindForm.Docs.Number,
+			bindForm.Docs.Price,
+			bindForm.Docs.Date,
+			bindForm.Docs.StartDate,
+			bindForm.Docs.EndDate,
+			bindForm.Docs.Description,
+			jsonFiles,
+			bindForm.Docs.ID,
+			bindForm.Docs.Status,
+			bindForm.Docs.SupplierID,
+			bindForm.Docs.CategoryID,
+			bindForm.Docs.GroupsID,
+			time.Now(),
+		)
+		if err != nil {
+			return err
+		}
+
+		for _, item := range data {
+			if err := util.SaveUploadedFile(item.Files, &item.File.ID, &item.File.Path); err != nil {
+				s.logger.Error().Err(err).Send()
+				return fmt.Errorf("upload file err: %s", err.Error())
+			}
+		}
+
 	} else {
 		query = `WITH upd_contract as (UPDATE contracts
 		SET title=$1,numb=$2,price=$3,date=$4,start_date=$5,end_date=$6,description=$7 
@@ -255,40 +288,23 @@ func (s *service) Update(bindForm *model.BindForm) error {
 		UPDATE commons
 		SET status=$9,supplier_id=$10,category_id=$11,c_groups_id=$12,updated_at=$13
 		WHERE contract_id=(SELECT id from upd_contract)`
-	}
-
-	query = `WITH upd_contract as (UPDATE contracts
-	SET title=$1,numb=$2,price=$3,date=$4,start_date=$5,end_date=$6,description=$7, files=$8 
-	WHERE contract_id=$9
-	RETURNING contract_id as id
-	)
-	UPDATE commons
-	SET status=$10,supplier_id=$11,category_id=$12,c_groups_id=$13,updated_at=$14
-	WHERE contract_id=(SELECT id from upd_contract)`
-	err = s.store.repo.InsertOne(nil, query,
-		bindForm.Docs.Title,
-		bindForm.Docs.Number,
-		bindForm.Docs.Price,
-		bindForm.Docs.Date,
-		bindForm.Docs.StartDate,
-		bindForm.Docs.EndDate,
-		bindForm.Docs.Description,
-		jsonFiles,
-		bindForm.Docs.ID,
-		bindForm.Docs.Status,
-		bindForm.Docs.SupplierID,
-		bindForm.Docs.CategoryID,
-		bindForm.Docs.GroupsID,
-		time.Now(),
-	)
-	if err != nil {
-		return err
-	}
-
-	for _, item := range data {
-		if err := util.SaveUploadedFile(item.Files, &item.File.ID, &item.File.Path); err != nil {
-			s.logger.Error().Err(err).Send()
-			return fmt.Errorf("upload file err: %s", err.Error())
+		err = s.store.repo.InsertOne(nil, query,
+			bindForm.Docs.Title,
+			bindForm.Docs.Number,
+			bindForm.Docs.Price,
+			bindForm.Docs.Date,
+			bindForm.Docs.StartDate,
+			bindForm.Docs.EndDate,
+			bindForm.Docs.Description,
+			bindForm.Docs.ID,
+			bindForm.Docs.Status,
+			bindForm.Docs.SupplierID,
+			bindForm.Docs.CategoryID,
+			bindForm.Docs.GroupsID,
+			time.Now(),
+		)
+		if err != nil {
+			return err
 		}
 	}
 

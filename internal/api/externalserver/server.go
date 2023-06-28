@@ -135,15 +135,27 @@ func (s *server) configureRouter() {
 	apiV1.GET("/", s.middleware(get))
 	apiV1.GET("/:id", s.middleware(get))
 	apiV1.GET("/sps", s.middleware(sps))
-	apiV1.POST("/download/:id", s.middleware(download))
-	apiV1.POST("/add", s.middleware(add))
-	apiV1.POST("/update/:id", s.middleware(upd))
-	apiV1.DELETE("/delete/:id", s.middleware(del))
+	apiV1.POST("/download/:id", s.authMiddleware, s.middleware(download))
+	apiV1.POST("/add", s.authMiddleware, s.middleware(add))
+	apiV1.POST("/update/:id", s.authMiddleware, s.middleware(upd))
+	apiV1.DELETE("/delete/:id", s.authMiddleware, s.middleware(del))
 
 	apiV2 := s.router.Group("apiV2/auth")
 	apiV2.POST("/login", s.middleware(authorize))
 	apiV2.POST("/refresh", s.middleware(refresh))
 
+}
+
+func (s *server) authMiddleware(ctx *gin.Context) {
+	token := ctx.GetHeader("Authorization")
+	if _, err := s.svc.VerifyJWT(token, false); err != nil {
+		s.logger.Error().Err(err).Send()
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
+
+		return
+	}
+
+	ctx.Next()
 }
 
 func (s *server) middleware(tr transport) func(*gin.Context) {

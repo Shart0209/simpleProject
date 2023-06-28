@@ -30,13 +30,6 @@ func (t *getDownloadFileTransport) Handler(ctx *gin.Context) {
 			return
 		}
 
-		token := ctx.GetHeader("Authorization")
-		if _, err := t.svc.VerifyJWT(token, false); err != nil {
-			t.log.Error().Err(err)
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, Response{Error: err.Error()})
-			return
-		}
-
 		var idx string
 		err = json.Unmarshal(body, &idx)
 		if err != nil {

@@ -32,7 +32,7 @@ type DocsAttrs struct {
 	Group       int                      `form:"group" json:"group" binding:"required" db:"сgroups"`
 	Author      string                   `form:"author" json:"author" binding:"required" db:"author"`
 	CreatedAt   time.Time                `form:"created_at" json:"created_at" binding:"omitempty" db:"created_at"`
-	UpdateAt    time.Time                `form:"update_at" json:"update_at" binding:"omitempty" db:"update_at"`
+	UpdateAt    time.Time                `form:"updated_at" json:"updated_at" binding:"omitempty" db:"updated_at"`
 	AttrFiles   []map[string]interface{} `json:"files" db:"files"`
 }
 
