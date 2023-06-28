@@ -12,7 +12,7 @@
 # Vscode files
 .vscode
 
-.upload/*
+.backend/upload/*
 
 # Binaries for programs and plugins
 *.exe
