@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	IsDebug     string `envconfig:"IS_DEBUG" default:"true"`
+	IsDebug     bool   `envconfig:"IS_DEBUG" default:"false"`
 	LogLevel    string `envconfig:"LOG_LEVEL" default:"debug"`
 	Listen      string `envconfig:"LISTEN" default:":8000"`
 	FilesFolder string `envconfig:"FILES_FOLDER" default:"upload"`

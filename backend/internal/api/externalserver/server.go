@@ -44,9 +44,13 @@ type server struct {
 	http   *http.Server
 }
 
-func New(ctx context.Context, logger zerolog.Logger) *server {
+func New(ctx context.Context, isDebug bool, logger zerolog.Logger) *server {
+	if !isDebug {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	s := &server{
-		router: gin.Default(),
+		router: gin.New(),
 		logger: logger,
 		ctx:    ctx,
 	}
@@ -56,6 +60,7 @@ func New(ctx context.Context, logger zerolog.Logger) *server {
 
 func (s *server) SetService(svc Service) {
 	s.svc = svc
+
 	s.configureRouter()
 }
 

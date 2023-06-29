@@ -42,7 +42,7 @@ func New(ctx context.Context, cfg *Config) (Service, error) {
 		ctx:            ctx,
 		cfg:            cfg,
 		logger:         logger.With().Str("component", "api service").Logger(),
-		externalServer: externalserver.New(ctx, logger.With().Str("component", "external http server").Logger()),
+		externalServer: externalserver.New(ctx, cfg.IsDebug, logger.With().Str("component", "external http server").Logger()),
 	}
 
 	svc.externalServer.SetService(&svc)
