@@ -25,6 +25,12 @@ services:
       networks:
         - net
 
+    db-migrate:
+    image: migrate/migrate
+    depends_on:
+      - db
+    command:
+     migration
 networks:
   net:
     name: net
