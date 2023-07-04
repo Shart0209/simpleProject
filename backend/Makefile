@@ -4,6 +4,13 @@ include .env
 lint:
 	golangci-lint run
 
+.PHONY: build
+build:
+	docker build -t app .
+.PHONY: run_app
+run_app:
+	docker run -p 8000:8000 app
+
 .PHONY: postgres
 postgres:
 	docker run --name ${DOCKER_NAME} -p ${POSTGRES_PORT}:${POSTGRES_PORT} -e POSTGRES_USER=${POSTGRES_USER} -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -d postgres:15-alpine

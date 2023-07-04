@@ -1,41 +1,33 @@
 services:
-  backend:
-    build:
-      context: backend
-      target: builder
-    container_name: b-ps-app
-    ports:
-      - "8000:8080"
-    depends_on:
-      - db
-    networks:
-      - sc
+    backend:
+      build:
+        context: backend
+        target: builder
+      container_name: b-ps-app
+      ports:
+        - "8000:8000"
+      depends_on:
+        - db
+      networks:
+        - net
 
-  frontend:
-    build:
-      context: frontend
-      target: builder
-    container_name: f-ps-app
-    ports:
-      - 80:80
-
-  db:
-    image: postgres:15-alpine
-    container_name: db-ps-psql
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    expose:
-      - 5432
-    networks:
-      - sc
+    db:
+      image: postgres:alpine
+      container_name: db-ps-psql
+      volumes:
+        - db-data:/var/lib/postgresql/data
+      environment:
+        - POSTGRES_DB="test_db"
+        - POSTGRES_user="postgres"
+        - POSTGRES_PASSWORD="1234qwER"
+      expose:
+        - 5432
+      networks:
+        - net
 
 networks:
-  sc:
-    name: sc
+  net:
+    name: net
 
 volumes:
   db-data:

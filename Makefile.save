@@ -1,0 +1,15 @@
+up:
+	docker compose up -d
+
+down:
+	docker compose down
+
+stop:
+	docker compose stop
+
+restart:
+	docker compose stop
+	docker compose up
+ps:
+	docker compose ps
+
