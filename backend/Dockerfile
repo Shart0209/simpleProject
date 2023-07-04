@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 FROM --platform=$BUILDPLATFORM golang:alpine AS builder
 
 WORKDIR /code
@@ -16,6 +15,8 @@ COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod/cache \
     --mount=type=cache,target=/go-build \
     go build -ldflags="-s -w" -o bin/backend cmd/api/main.go
+
+CMD ["/code/bin/backend"]
 
 FROM alpine
 
