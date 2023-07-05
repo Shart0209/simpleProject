@@ -18,7 +18,7 @@ RUN --mount=type=cache,target=/go/pkg/mod/cache \
 
 CMD ["/code/bin/backend"]
 
-FROM alpine
+FROM alpine AS builder2
 
 COPY --from=builder /code/bin/backend /usr/local/bin/backend
 

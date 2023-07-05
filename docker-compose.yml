@@ -1,9 +1,9 @@
 services:
-    backend:
+    app:
       build:
         context: backend
-        target: builder
-      container_name: b-ps-app
+        target: builder2
+      container_name: app
       ports:
         - "8000:8000"
       depends_on:
@@ -13,27 +13,54 @@ services:
 
     db:
       image: postgres:alpine
-      container_name: db-ps-psql
+      container_name: db
       volumes:
         - db-data:/var/lib/postgresql/data
       environment:
-        - POSTGRES_DB="test_db"
-        - POSTGRES_user="postgres"
-        - POSTGRES_PASSWORD="1234qwER"
+        POSTGRES_DB: "testdb"
+        POSTGRES_USER: "test"
+        POSTGRES_PASSWORD: "postgres"
       expose:
         - 5432
       networks:
         - net
 
     db-migrate:
-    image: migrate/migrate
-    depends_on:
-      - db
-    command:
-     migration
+      image: migrate/migrate
+      container_name: db-migrate
+      volumes:
+        - ./migrations:/migrations
+      entrypoint:
+        [
+          "migrate",
+          "-path",
+          "/migrations",
+          "-database",
+          "postgres://habrpguser:pgpwd4habr@db:5432/habrdb?sslmode=disable",
+        ]
+      command: ["up"]
+      depends_on:
+        - postgres
+      networks:
+        - net
+
+    postgres:
+      image: postgres:alpine
+      environment:
+        POSTGRES_DB: "habrdb2"
+        POSTGRES_USER: "habruser"
+        POSTGRES_PASSWORD: "habr"
+        PGDATA: "/var/lib/postgresql/data/pgdata"
+      volumes:
+        - ../2. Init Database:/docker-entrypoint-initdb.d
+        - habrdb-data:/var/lib/postgresql/data
+      ports:
+        - "5432:5432"
+
 networks:
   net:
     name: net
 
 volumes:
   db-data:
+  habrdb-data:
