@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:alpine AS build-stage
 
 WORKDIR /code
 
@@ -18,9 +18,9 @@ RUN --mount=type=cache,target=/go/pkg/mod/cache \
 
 CMD ["/code/bin/backend"]
 
-FROM alpine AS builder2
+FROM alpine AS prod-stage
 
-COPY --from=builder /code/bin/backend /usr/local/bin/backend
+COPY --from=build-stage /code/bin/backend /usr/local/bin/backend
 
 CMD ["/usr/local/bin/backend"]
 

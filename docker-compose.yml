@@ -1,66 +1,81 @@
+version: "3.8"
 services:
-    app:
-      build:
-        context: backend
-        target: builder2
-      container_name: app
-      ports:
-        - "8000:8000"
-      depends_on:
-        - db
-      networks:
-        - net
+  app:
+    build:
+      context: backend
+      target: prod-stage
+    container_name: app
+    env_file:
+      - ./.env.dev
+    ports:
+      - "${LISTEN}:${LISTEN}"
+    depends_on:
+      - db
+    networks:
+      - db-net
 
-    db:
-      image: postgres:alpine
-      container_name: db
-      volumes:
-        - db-data:/var/lib/postgresql/data
-      environment:
-        POSTGRES_DB: "testdb"
-        POSTGRES_USER: "test"
-        POSTGRES_PASSWORD: "postgres"
-      expose:
-        - 5432
-      networks:
-        - net
+  frontend:
+    build:
+      context: frontend
+      target: prod-stage
+    container_name: ngix
+    environment:
+      VITE_API_URL: http://localhost:${LISTEN}
+    ports:
+      - "8080:80"
 
-    db-migrate:
-      image: migrate/migrate
-      container_name: db-migrate
-      volumes:
-        - ./migrations:/migrations
-      entrypoint:
-        [
-          "migrate",
-          "-path",
-          "/migrations",
-          "-database",
-          "postgres://habrpguser:pgpwd4habr@db:5432/habrdb?sslmode=disable",
-        ]
-      command: ["up"]
-      depends_on:
-        - postgres
-      networks:
-        - net
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./migrations:/docker-entrypoint-initdb.d
+      - db-data:/var/lib/postgresql/data
+    expose:
+      - ${POSTGRES_PORT}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    networks:
+      - db-net
 
-    postgres:
-      image: postgres:alpine
-      environment:
-        POSTGRES_DB: "habrdb2"
-        POSTGRES_USER: "habruser"
-        POSTGRES_PASSWORD: "habr"
-        PGDATA: "/var/lib/postgresql/data/pgdata"
-      volumes:
-        - ../2. Init Database:/docker-entrypoint-initdb.d
-        - habrdb-data:/var/lib/postgresql/data
-      ports:
-        - "5432:5432"
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:7.4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "test@test.com"
+      PGADMIN_DEFAULT_PASSWORD: "test"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - db-net
 
 networks:
-  net:
-    name: net
+  db-net:
+    name: db-net
 
 volumes:
   db-data:
-  habrdb-data:
+  pgadmin-data:
