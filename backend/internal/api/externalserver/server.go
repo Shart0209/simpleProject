@@ -2,6 +2,7 @@ package externalserver
 
 import (
 	"context"
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -27,7 +28,7 @@ type Service interface {
 }
 
 type Server interface {
-	Init(bindAddr string)
+	Init(bindPort, bindAddr string)
 	SetService(svc Service)
 	GetServer() *http.Server
 }
@@ -68,11 +69,12 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-func (s *server) Init(bindAddr string) {
+func (s *server) Init(bindPort, bindAddr string) {
 	s.http = &http.Server{
-		Addr:    bindAddr,
+		Addr:    fmt.Sprintf("%s:%s", bindAddr, bindPort),
 		Handler: s,
 	}
+	s.logger.Info().Msg(s.http.Addr)
 }
 
 func (s *server) GetServer() *http.Server {
@@ -88,14 +90,21 @@ func (s *server) configureRouter() {
 		MaxAge:        12 * time.Hour,
 	}))
 
-	//s.router.Use(cors.Default())
-
-	//test
-	s.router.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
+	// logs
+	s.router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		// your custom format
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			param.ClientIP,
+			param.TimeStamp.Format(time.RFC1123),
+			param.Method,
+			param.Path,
+			param.Request.Proto,
+			param.StatusCode,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	}))
 
 	// init transports
 	add := &addTransport{
@@ -135,6 +144,13 @@ func (s *server) configureRouter() {
 		svc: s.svc,
 		log: s.logger.With().Str("transport", "auth/refresh token").Logger(),
 	}
+
+	//test
+	s.router.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
+	})
 
 	apiV1 := s.router.Group("apiV1/docs")
 	apiV1.GET("/", s.middleware(get))

@@ -7,8 +7,8 @@ services:
     container_name: app
     env_file:
       - ./.env.dev
-    ports:
-      - "${LISTEN}:${LISTEN}"
+#    ports:
+#      - "8000:${PORT}"
     depends_on:
       - db
     networks:
@@ -20,7 +20,7 @@ services:
       target: prod-stage
     container_name: ngix
     environment:
-      VITE_API_URL: http://localhost:${LISTEN}
+      VITE_API_URL: "http://${HOST}:8000"
     ports:
       - "8080:80"
 
@@ -52,25 +52,25 @@ services:
     networks:
       - db-net
 
-  pgadmin:
-    container_name: pgadmin_container
-    image: dpage/pgadmin4:7.4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "test@test.com"
-      PGADMIN_DEFAULT_PASSWORD: "test"
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-    ports:
-      - "5050:80"
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 1G
-    networks:
-      - db-net
+#  pgadmin:
+#    container_name: pgadmin_container
+#    image: dpage/pgadmin4:7.4
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: "test@test.com"
+#      PGADMIN_DEFAULT_PASSWORD: "test"
+#      PGADMIN_CONFIG_SERVER_MODE: "False"
+#    volumes:
+#      - pgadmin-data:/var/lib/pgadmin
+#    ports:
+#      - "5050:80"
+#    restart: unless-stopped
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.5'
+#          memory: 1G
+#    networks:
+#      - db-net
 
 networks:
   db-net:

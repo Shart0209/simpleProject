@@ -35,7 +35,7 @@ shell-db:
 
 .PHONY: logs
 logs:
-	docker compose  --env-file ./.env.dev logs app
+	docker compose  --env-file ./.env.dev logs app -f
 
 .PHONY: imgd
 imgd:

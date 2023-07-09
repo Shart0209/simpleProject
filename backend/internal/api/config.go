@@ -10,7 +10,8 @@ import (
 type Config struct {
 	IsDebug     bool   `envconfig:"IS_DEBUG" default:"true"`
 	LogLevel    string `envconfig:"LOG_LEVEL" default:"debug"`
-	Listen      string `envconfig:"LISTEN" default:":8000"`
+	Port        string `envconfig:"PORT" default:"8000"`
+	Host        string `envconfig:"HOST" default:"localhost"`
 	FilesFolder string `envconfig:"FILES_FOLDER" default:"upload"`
 	Postgres    *StorageConfig
 	AuthConfig  *AuthConfig
@@ -33,7 +34,7 @@ type AuthConfig struct {
 
 func init() {
 	// loads values from .env into the system
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(".env.dev"); err != nil {
 		log.Print("No .env file found")
 	}
 }

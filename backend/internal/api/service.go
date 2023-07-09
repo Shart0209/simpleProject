@@ -60,7 +60,7 @@ func (s *service) Start(ctx context.Context, g *errgroup.Group) error {
 		return err
 	}
 
-	s.externalServer.Init(s.cfg.Listen)
+	s.externalServer.Init(s.cfg.Port, s.cfg.Host)
 	g.Go(libHTTP.MakeServerRunner(ctx,
 		s.baseLogger.With().Str("component", "external_http_runner").Logger(),
 		s.externalServer.GetServer()))
