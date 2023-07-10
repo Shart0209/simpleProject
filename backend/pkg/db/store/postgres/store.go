@@ -43,7 +43,7 @@ func NewStore(ctx context.Context, cfg *Config, logger zerolog.Logger) (pgStore.
 
 	dbpool, err := pgxpool.New(ctx, connString)
 	if err != nil {
-		return nil, fmt.Errorf("DB connection failed: %w", err)
+		return nil, fmt.Errorf("DB connection failed: %w %s", err, connString)
 	}
 
 	return &store{

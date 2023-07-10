@@ -20,9 +20,9 @@ RUN --mount=type=cache,target=/go/pkg/mod/cache \
 
 CMD ["/code/bin/backend"]
 
-#FROM alpine AS prod-stage
-#
-#COPY --from=build-stage /code/bin/backend /usr/local/bin/backend
-#
-#CMD ["/usr/local/bin/backend"]
+FROM alpine AS prod-stage
+
+COPY --from=build-stage /code/bin/backend /usr/local/bin/backend
+
+CMD ["/usr/local/bin/backend"]
 

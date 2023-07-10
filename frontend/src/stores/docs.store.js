@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 
 import { useAuthStore } from '@/stores';
 
-const baseURL = `${import.meta.env.VITE_API_URL}/apiV1/docs`;
+const baseURL = 'http://172.16.13.173:8888/apiV1/docs';
 
 export const useDocsStore = defineStore('docs', () => {
   const router = useRouter();
