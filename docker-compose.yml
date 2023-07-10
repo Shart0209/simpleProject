@@ -78,7 +78,7 @@ services:
 networks:
   db-net:
     name: db-net
-    external: true
+    driver: bridge
 
 volumes:
   db-data:
