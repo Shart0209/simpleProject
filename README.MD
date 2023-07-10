@@ -1,4 +1,6 @@
 ## Service contracts
+
+### Running a sample
 ```console
 git clone https://github.com/Shart0209/simpleProject.git
 ```
