@@ -1,3 +1,5 @@
+# Service contracts
+# Awesome Compose
 git clone https://github.com/Shart0209/simpleProject.git
 cd simpleProject
 make up
