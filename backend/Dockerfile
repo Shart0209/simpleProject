@@ -24,9 +24,9 @@ FROM alpine AS prod-stage
 
 COPY --from=build-stage /code/bin/backend /usr/local/bin/backend
 
-RUN mkdir /upload/ГК № ЧИТ-13-45
+RUN mkdir -p /upload/ГК\ №\ ЧИТ-13-45
 
-COPY ./migrations/гос контракт тест.jpg /upload/ГК № ЧИТ-13-45/e64b7418-1478-4e78-a866-74e0c4b77419-0.jpg
+RUN echo "" > /upload/ГК\ №\ ЧИТ-13-45/e64b7418-1478-4e78-a866-74e0c4b77419-0.txt
 
 CMD ["/usr/local/bin/backend"]
 

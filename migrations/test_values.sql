@@ -12,9 +12,9 @@ WITH new_contract as  (
 	VALUES (
 		'Оказание услуг Интернет','ЧИТ-13-45', '152000', '2023-07-01', '2023-07-01','2023-12-31', 'test test description', '[
   {
-    "id": "e64b7418-1478-4e78-a866-74e0c4b77419-0.jpg",
-    "name": "гос контракт тест.jpg",
-    "path": "C:\\Users\\a.shvecov\\GolandProjects\\simpleProject\\backend\\upload\\ГК № ЧИТ-13-45",
+    "id": "e64b7418-1478-4e78-a866-74e0c4b77419-0.txt",
+    "name": "гос контракт тест.txt",
+    "path": "/upload/ГК № ЧИТ-13-45",
     "size": 30936
   }
 ]'
