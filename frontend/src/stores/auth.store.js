@@ -5,7 +5,7 @@ import { SHA256 } from 'crypto-js';
 
 import { Buffer } from 'buffer';
 
-const baseURL = 'http://172.16.13.173:8888/apiV2/auth';
+const baseURL = 'http:/localhost:8888/apiV2/auth';
 
 export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
