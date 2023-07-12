@@ -45,19 +45,17 @@ imgd:
 vold:
 	docker volume prune -a
 
+### dev
+postgres:
+	docker run --name db-test -p ${POSTGRES_PORT}:${POSTGRES_PORT} -e POSTGRES_USER=${POSTGRES_USER} -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -d postgres:15-alpine
 
 .PHONY: createdb
+
 createdb:
-	docker compose  --env-file ./.env.dev exec db createdb -U ${POSTGRES_USER} -O ${POSTGRES_USER} ${POSTGRES_DB_NAME}
+	docker exec db-test createdb -U ${POSTGRES_USER} -O ${POSTGRES_USER} ${POSTGRES_DB_NAME}
 
 .PHONY: dropdb
+
 dropdb:
-	docker compose --env-file ./.env.dev exec db dropdb -U ${POSTGRES_USER} ${POSTGRES_DB_NAME}
-
-.PHONY: migrateup
-migrateup:
-	migrate -path ./migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?sslmode=disable" -verbose up 2
-
-.PHONY: migratedown
-migratedown:
-	migrate -path ./migrations -database "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?sslmode=disable" -verbose down
+	docker exec db-test dropdb -U ${POSTGRES_USER} ${POSTGRES_DB_NAME}
+###
