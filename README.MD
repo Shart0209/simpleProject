@@ -17,3 +17,7 @@ http://localhost:8080/
 login: test
 pswd: test
 ```
+Для удаления контейнеров
+```console
+make destroy
+```
