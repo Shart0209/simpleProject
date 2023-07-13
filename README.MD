@@ -7,7 +7,7 @@ git clone https://github.com/Shart0209/simpleProject.git
 ```console
 cd simpleProject
 ```
-Сборка проекта
+Сборка проекта:
 ```console
 make up
 ```
@@ -18,7 +18,7 @@ http://localhost:8080/
 login: test
 pswd: test
 ```
-Для удаления контейнеров
+Для удаления контейнеров:
 ```console
 make destroy
 ```
