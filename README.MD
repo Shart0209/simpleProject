@@ -7,6 +7,7 @@ git clone https://github.com/Shart0209/simpleProject.git
 ```console
 cd simpleProject
 ```
+Сборка проекта
 ```console
 make up
 ```
